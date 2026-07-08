@@ -1,642 +1,627 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LỰA CHỌN CỦA LINH HỒN - IDLE RPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Spirit Wars 2D</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body {
-            background: #0a0515;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            background-image: radial-gradient(ellipse at 20% 30%, #1a0f2a 0%, #04010a 100%);
-            padding: 10px;
-        }
-        #game-container {
-            background: linear-gradient(160deg, #1a1228, #0d0818);
-            width: 780px;
-            max-width: 100%;
-            padding: 18px 20px 22px;
-            border-radius: 40px;
-            border: 2px solid #7a5aaa;
-            box-shadow: 0 0 80px #4a2a7a66, inset 0 0 60px #2a1a3a33;
-            color: #e4d8f0;
-        }
-        #title {
-            text-align: center;
-            font-size: 2.4rem;
-            font-weight: 900;
-            color: #f0d060;
-            text-shadow: 0 0 30px #8a6a2a, 0 0 60px #4a3a1a;
-            letter-spacing: 3px;
-            font-family: 'Times New Roman', serif;
-        }
-        #subtitle {
-            text-align: center;
-            color: #a090b0;
-            font-size: 0.85rem;
-            border-bottom: 1px solid #3a2a5a;
-            padding-bottom: 10px;
-            margin-bottom: 12px;
-            font-style: italic;
-        }
-        /* ===== HERO BANNER ===== */
-        #hero-banner {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding: 8px 4px 12px;
-            margin-bottom: 10px;
-            scroll-behavior: smooth;
-            border-bottom: 1px solid #2a1a4a;
-        }
-        #hero-banner::-webkit-scrollbar { height: 4px; }
-        #hero-banner::-webkit-scrollbar-thumb { background: #4a2a7a; border-radius: 20px; }
-        .hero-card {
-            min-width: 80px;
-            background: #0d081a;
-            border-radius: 16px;
-            padding: 10px 8px;
-            text-align: center;
-            border: 1px solid #3a2a5a;
-            transition: all 0.2s;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .hero-card.active {
-            border-color: #f0d060;
-            box-shadow: 0 0 20px #f0d06044;
-        }
-        .hero-card .avatar { font-size: 2.5rem; }
-        .hero-card .name { font-size: 0.65rem; color: #b0a8c8; margin-top: 4px; white-space: nowrap; }
-        .hero-card .level { font-size: 0.6rem; color: #f0e070; }
-        .hero-card .rarity {
-            font-size: 0.5rem;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: #2a1a3e;
-            display: inline-block;
-            margin-top: 2px;
-        }
-        /* ===== SCENE ===== */
-        #scene-image {
-            width: 100%;
-            height: 180px;
-            background: #0a0a12;
-            border-radius: 24px;
-            border: 1px solid #3a2a6a;
-            margin-bottom: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4rem;
-            background-size: cover;
-            background-position: center;
-            box-shadow: inset 0 0 50px #00000066;
-            transition: background 0.4s;
-            position: relative;
-            overflow: hidden;
-        }
-        #scene-image .emoji-bg { text-shadow: 0 0 40px #000000cc; opacity: 0.9; z-index: 2; }
-        #scene-image .img-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 1; }
-        /* ===== STATS ===== */
-        #stats-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px 12px;
-            background: #0d081a;
-            padding: 6px 14px;
-            border-radius: 60px;
-            border: 1px solid #3a2a5a;
-            margin-bottom: 12px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            justify-content: space-around;
-        }
-        .stat-item { color: #b0a8c8; }
-        .stat-item span { color: #f0e070; }
-        .stat-bar {
-            display: inline-block;
-            width: 60px;
-            height: 8px;
-            background: #1a1a2a;
-            border-radius: 20px;
-            overflow: hidden;
-            vertical-align: middle;
-            margin-left: 4px;
-            border: 1px solid #3a3a5a;
-        }
-        .stat-fill { height: 100%; width: 100%; transition: width 0.3s; }
-        #hp-fill { background: #d05050; }
-        #mp-fill { background: #5080d0; }
-        #xp-fill { background: #d0b040; }
-        /* ===== REWARD ===== */
-        #reward-popup {
-            background: #1a0f20;
-            border: 2px solid #f0d060;
-            border-radius: 20px;
-            padding: 8px 14px;
-            margin-bottom: 10px;
-            text-align: center;
-            font-weight: bold;
-            color: #f0e070;
-            display: none;
-            animation: glow 0.7s ease;
-            box-shadow: 0 0 30px #f0d06044;
-            font-size: 0.9rem;
-        }
-        @keyframes glow {
-            0% { opacity: 0; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        /* ===== STORY ===== */
-        #story-area {
-            background: #08040e;
-            border: 1px solid #2a1a4a;
-            border-radius: 20px;
-            padding: 12px 16px;
-            min-height: 100px;
-            max-height: 150px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            margin-bottom: 12px;
-            color: #d0c8e0;
-            box-shadow: inset 0 0 30px #00000066;
-            scroll-behavior: smooth;
-        }
-        #story-area::-webkit-scrollbar { width: 5px; }
-        #story-area::-webkit-scrollbar-thumb { background: #4a2a7a; border-radius: 20px; }
-        .story-narrator { color: #c8c0d8; }
-        .story-event { color: #f0c070; }
-        .story-combat { color: #f07070; }
-        .story-loot { color: #f0d060; }
-        .story-info { color: #80c0f0; }
-        .story-death { color: #ff4040; font-weight: bold; }
-        /* ===== ACTIONS ===== */
-        #action-panel {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .act-btn {
-            background: #1a1228;
-            border: 1px solid #4a3a6a;
-            color: #d0c8e8;
-            padding: 12px 4px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: 'Segoe UI', sans-serif;
-            text-align: center;
-            box-shadow: 0 3px 0 #0a0612;
-            line-height: 1.2;
-        }
-        .act-btn:hover { background: #2a1a3e; border-color: #7a5aaa; transform: scale(1.03); }
-        .act-btn:active { transform: translateY(3px); box-shadow: none; }
-        .act-btn:disabled { opacity: 0.3; pointer-events: none; filter: grayscale(0.6); }
-        .act-btn.special { border-color: #c09040; background: #2a1a0a; }
-        .act-btn.danger { border-color: #c04040; background: #2a0a0a; }
-        .act-btn.boss { border-color: #c040c0; background: #2a0a2a; }
-        @media (max-width: 600px) {
-            #action-panel { grid-template-columns: 1fr 1fr; }
-            #title { font-size: 1.8rem; }
-            #scene-image { height: 140px; font-size: 3rem; }
-            #stats-row { font-size: 0.65rem; gap: 2px; }
-            .stat-bar { width: 40px; }
-            .hero-card { min-width: 65px; padding: 6px 4px; }
-            .hero-card .avatar { font-size: 1.8rem; }
-        }
+        body { background: #0a0f1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; }
+        #gameContainer { background: #141c2b; padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #2a3a55; }
+        canvas { display: block; width: 900px; height: 600px; border-radius: 16px; background: #1b2538; cursor: pointer; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
+        #ui { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: #b8d0e8; font-weight: bold; text-shadow: 0 2px 4px #000; }
+        .stat { background: #0f172a; padding: 8px 18px; border-radius: 30px; border: 1px solid #2f4a6b; font-size: 16px; display: flex; align-items: center; gap: 12px; }
+        .stat span { color: #ffd966; }
+        button { background: #2a4a6a; border: none; color: white; padding: 8px 24px; border-radius: 40px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s; border: 1px solid #4a7a9a; box-shadow: 0 4px 0 #0a1a2a; }
+        button:hover { background: #3a6a8a; transform: translateY(-2px); box-shadow: 0 6px 0 #0a1a2a; }
+        button:active { transform: translateY(4px); box-shadow: 0 1px 0 #0a1a2a; }
+        #resetBtn { background: #4a2a3a; border-color: #7a4a5a; }
+        #resetBtn:hover { background: #6a3a4a; }
+        @media (max-width: 920px) { canvas { width: 100%; height: auto; aspect-ratio: 3/2; } #gameContainer { padding: 10px; width: 98vw; } }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="title">⚔️ LỰA CHỌN CỦA LINH HỒN ⚔️</div>
-        <div id="subtitle">— Idle RPG - Bảo vệ Cây Thế Giới —</div>
-
-        <!-- Hero Banner -->
-        <div id="hero-banner"></div>
-
-        <div id="scene-image">
-            <span class="emoji-bg">🌳</span>
-            <div class="img-overlay"></div>
-        </div>
-
-        <div id="stats-row">
-            <div class="stat-item">❤️ HP <span id="hp-text">100/100</span> <span class="stat-bar"><span class="stat-fill" id="hp-fill"></span></span></div>
-            <div class="stat-item">🌀 MP <span id="mp-text">50/50</span> <span class="stat-bar"><span class="stat-fill" id="mp-fill"></span></span></div>
-            <div class="stat-item">⭐ LV.<span id="level-text">1</span> <span class="stat-bar"><span class="stat-fill" id="xp-fill"></span></span></div>
-            <div class="stat-item">🗡️ <span id="atk-text">10</span> 🛡️ <span id="def-text">4</span></div>
-            <div class="stat-item">💰 <span id="gold-text">0</span></div>
-        </div>
-
-        <div id="reward-popup">🎁 PHẦN THƯỞNG!</div>
-
-        <div id="story-area">
-            <div class="story-narrator">🌳 Chào mừng Vị Cứu Tinh! Cây Thế Giới đang bị bóng tối bao phủ...</div>
-        </div>
-
-        <div id="action-panel">
-            <button class="act-btn" id="btn-fight">⚔️ Chiến đấu</button>
-            <button class="act-btn special" id="btn-summon">✨ Triệu hồi (100 vàng)</button>
-            <button class="act-btn" id="btn-upgrade">⬆️ Nâng cấp (50 vàng)</button>
-            <button class="act-btn" id="btn-idle">⏳ Tự động</button>
-        </div>
+<div id="gameContainer">
+    <canvas id="gameCanvas" width="900" height="600"></canvas>
+    <div id="ui">
+        <div class="stat">❤️ HP: <span id="hpDisplay">100</span></div>
+        <div class="stat">⚔️ ATK: <span id="atkDisplay">12</span></div>
+        <div class="stat">🛡️ DEF: <span id="defDisplay">5</span></div>
+        <div class="stat">💰 Gold: <span id="goldDisplay">0</span></div>
+        <button id="resetBtn">↺ Restart</button>
     </div>
+</div>
+<script>
+    (function(){
+        // ========== CONFIG ==========
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = 900, H = 600;
 
-    <script>
-        // ================================================================
-        // SPIRIT WARS 2D STYLE - HERO COLLECTION IDLE RPG
-        // ================================================================
-        (function() {
-            // ---------- HERO TEMPLATES ----------
-            const HERO_TEMPLATES = [
-                { id: 'warrior', name: 'Chiến Binh', avatar: '⚔️', baseAtk: 12, baseDef: 6, hp: 80, cost: 0, rarity: 'Thường' },
-                { id: 'mage', name: 'Pháp Sư', avatar: '🧙', baseAtk: 18, baseDef: 3, hp: 60, cost: 50, rarity: 'Hiếm' },
-                { id: 'archer', name: 'Cung Thủ', avatar: '🏹', baseAtk: 15, baseDef: 4, hp: 70, cost: 40, rarity: 'Thường' },
-                { id: 'paladin', name: 'Hiệp Sĩ', avatar: '🛡️', baseAtk: 10, baseDef: 9, hp: 100, cost: 60, rarity: 'Hiếm' },
-                { id: 'assassin', name: 'Sát Thủ', avatar: '🗡️', baseAtk: 22, baseDef: 2, hp: 50, cost: 70, rarity: 'Siêu Hiếm' },
-                { id: 'druid', name: 'Đức Sĩ', avatar: '🌿', baseAtk: 8, baseDef: 7, hp: 90, cost: 55, rarity: 'Hiếm' },
-                { id: 'dragon', name: 'Rồng', avatar: '🐉', baseAtk: 28, baseDef: 8, hp: 120, cost: 150, rarity: 'Huyền Thoại' },
-                { id: 'angel', name: 'Thiên Thần', avatar: '👼', baseAtk: 20, baseDef: 12, hp: 110, cost: 120, rarity: 'Huyền Thoại' }
-            ];
+        // UI elements
+        const hpSpan = document.getElementById('hpDisplay');
+        const atkSpan = document.getElementById('atkDisplay');
+        const defSpan = document.getElementById('defDisplay');
+        const goldSpan = document.getElementById('goldDisplay');
 
-            // ---------- PLAYER ----------
-            let player = {
-                hp: 100,
-                maxHp: 100,
-                mp: 50,
-                maxMp: 50,
-                level: 1,
-                xp: 0,
-                xpNext: 40,
-                atk: 10,
-                def: 4,
-                gold: 50,
-                heroes: [],
-                activeHeroIndex: 0,
-                kills: 0,
-                totalAtk: 10,
-                totalDef: 4,
-                totalHp: 100
+        // ========== GAME STATE ==========
+        let game = {
+            player: { x: 400, y: 480, w: 40, h: 50, hp: 100, maxHp: 100, atk: 12, def: 5, baseAtk: 12, baseDef: 5, level: 1, exp: 0, expNext: 30, gold: 0 },
+            enemies: [],
+            projectiles: [],
+            particles: [],
+            enemySpawnTimer: 0,
+            enemySpawnInterval: 70, // frames
+            maxEnemies: 6,
+            frame: 0,
+            gameOver: false,
+            win: false,
+            bossActive: false,
+            bossSpawned: false,
+            bossDefeated: false,
+            clickCooldown: 0,
+            // floating texts
+            floatingTexts: []
+        };
+
+        // ========== UTILITY ==========
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+        function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+
+        // ========== ENEMY FACTORY ==========
+        function createEnemy(type, x, y) {
+            const base = {
+                x: x || rand(60, W-60),
+                y: y || rand(60, 300),
+                w: 36, h: 42,
+                speed: 1.2 + Math.random() * 0.8,
+                type: type || 'goblin',
+                state: 'idle',
+                attackCooldown: 0,
+                hitFlash: 0
             };
+            switch(base.type) {
+                case 'goblin':
+                    return { ...base, hp: 30, maxHp: 30, atk: 8, def: 2, exp: 12, gold: 5, color: '#4caf50', speed: 1.6 };
+                case 'skeleton':
+                    return { ...base, hp: 45, maxHp: 45, atk: 12, def: 3, exp: 18, gold: 8, color: '#b0b0b0', speed: 1.2 };
+                case 'shadow':
+                    return { ...base, hp: 60, maxHp: 60, atk: 15, def: 5, exp: 25, gold: 12, color: '#7b4a9e', speed: 1.0 };
+                case 'boss':
+                    return { ...base, hp: 200, maxHp: 200, atk: 22, def: 8, exp: 80, gold: 50, color: '#c0392b', speed: 0.8, w: 64, h: 72, type: 'boss' };
+                default:
+                    return { ...base, hp: 30, maxHp: 30, atk: 8, def: 2, exp: 12, gold: 5, color: '#4caf50', speed: 1.6 };
+            }
+        }
 
-            let enemy = null;
-            let isFighting = false;
-            let idleInterval = null;
-            let autoFight = false;
+        // ========== SPAWN ENEMY ==========
+        function spawnEnemy() {
+            if (game.gameOver || game.win) return;
+            if (game.bossActive && game.enemies.length >= 1) return; // boss fight: only boss
+            if (game.enemies.length >= game.maxEnemies) return;
 
-            // DOM refs
-            const storyArea = document.getElementById('story-area');
-            const sceneImg = document.getElementById('scene-image');
-            const heroBanner = document.getElementById('hero-banner');
-            const rewardPopup = document.getElementById('reward-popup');
-            const btnFight = document.getElementById('btn-fight');
-            const btnSummon = document.getElementById('btn-summon');
-            const btnUpgrade = document.getElementById('btn-upgrade');
-            const btnIdle = document.getElementById('btn-idle');
-            const hpText = document.getElementById('hp-text');
-            const hpFill = document.getElementById('hp-fill');
-            const mpText = document.getElementById('mp-text');
-            const mpFill = document.getElementById('mp-fill');
-            const levelText = document.getElementById('level-text');
-            const atkText = document.getElementById('atk-text');
-            const defText = document.getElementById('def-text');
-            const goldText = document.getElementById('gold-text');
+            let type = 'goblin';
+            const r = Math.random();
+            if (game.bossSpawned && !game.bossDefeated) {
+                // boss already spawned, don't spawn more
+                return;
+            }
+            // progressive difficulty
+            const lvl = game.player.level;
+            if (lvl >= 5 && r < 0.25) type = 'shadow';
+            else if (lvl >= 3 && r < 0.45) type = 'skeleton';
+            else type = 'goblin';
 
-            // ---------- HELPERS ----------
-            function log(msg, cls = 'story-narrator') {
-                const div = document.createElement('div');
-                div.className = cls;
-                div.innerHTML = msg;
-                storyArea.appendChild(div);
-                storyArea.scrollTop = storyArea.scrollHeight;
-                if (storyArea.children.length > 30) storyArea.removeChild(storyArea.firstChild);
+            // boss spawn condition: every 5 levels, but only if not already spawned
+            if (lvl % 5 === 0 && lvl > 0 && !game.bossSpawned && !game.bossDefeated && !game.bossActive) {
+                type = 'boss';
+                game.bossSpawned = true;
+                game.bossActive = true;
+                // spawn boss at center top
+                const boss = createEnemy('boss', W/2 - 32, 60);
+                game.enemies.push(boss);
+                addFloatingText('👹 BOSS APPEARS!', W/2-80, 120, '#ff4444', 40);
+                return;
             }
 
-            function updateUI() {
-                const hpPct = (player.hp / player.maxHp) * 100;
-                hpText.textContent = `${Math.floor(player.hp)}/${player.maxHp}`;
-                hpFill.style.width = Math.min(100, Math.max(0, hpPct)) + '%';
-                const mpPct = (player.mp / player.maxMp) * 100;
-                mpText.textContent = `${Math.floor(player.mp)}/${player.maxMp}`;
-                mpFill.style.width = Math.min(100, Math.max(0, mpPct)) + '%';
-                const xpPct = (player.xp / player.xpNext) * 100;
-                levelText.textContent = player.level;
-                atkText.textContent = player.totalAtk;
-                defText.textContent = player.totalDef;
-                goldText.textContent = player.gold;
-                renderHeroes();
-            }
+            const enemy = createEnemy(type, rand(50, W-50), rand(40, 250));
+            game.enemies.push(enemy);
+        }
 
-            function updateHeroStats() {
-                let atk = 0,
-                    def = 0,
-                    hp = 0;
-                player.heroes.forEach(h => {
-                    const base = HERO_TEMPLATES.find(t => t.id === h.id);
-                    if (base) {
-                        const lvlBonus = h.level * 1.5;
-                        atk += base.baseAtk + lvlBonus;
-                        def += base.baseDef + lvlBonus * 0.8;
-                        hp += base.hp + h.level * 4;
-                    }
+        // ========== PROJECTILE ==========
+        function shootProjectile(targetX, targetY) {
+            if (game.gameOver || game.win) return;
+            const p = game.player;
+            const angle = Math.atan2(targetY - (p.y + p.h/2), targetX - (p.x + p.w/2));
+            const speed = 7;
+            const proj = {
+                x: p.x + p.w/2,
+                y: p.y + p.h/2 - 6,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                radius: 8,
+                damage: Math.floor(p.atk * (0.8 + Math.random() * 0.4)),
+                life: 120,
+                color: '#ffe066'
+            };
+            game.projectiles.push(proj);
+        }
+
+        // ========== PARTICLES ==========
+        function spawnParticles(x, y, color, count = 12) {
+            for (let i = 0; i < count; i++) {
+                const angle = rand(0, Math.PI*2);
+                const speed = rand(1, 4);
+                game.particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 0.5,
+                    radius: rand(2, 6),
+                    life: rand(20, 50),
+                    maxLife: 50,
+                    color: color || '#ffaa44',
+                    decay: 0.97
                 });
-                player.totalAtk = Math.floor(atk + player.atk);
-                player.totalDef = Math.floor(def + player.def);
-                player.totalHp = Math.floor(hp + player.maxHp);
-                player.maxHp = Math.floor(hp + player.maxHp);
-                if (player.hp > player.maxHp) player.hp = player.maxHp;
             }
+        }
 
-            // ---------- HERO RENDER ----------
-            function renderHeroes() {
-                heroBanner.innerHTML = '';
-                if (player.heroes.length === 0) {
-                    const empty = document.createElement('div');
-                    empty.style.cssText = 'color:#6a5a8a; padding:12px; text-align:center; width:100%; font-size:0.9rem;';
-                    empty.textContent = '👀 Chưa có anh hùng! Hãy triệu hồi.';
-                    heroBanner.appendChild(empty);
-                    return;
-                }
-                player.heroes.forEach((hero, idx) => {
-                    const base = HERO_TEMPLATES.find(t => t.id === hero.id);
-                    const card = document.createElement('div');
-                    card.className = `hero-card ${idx === player.activeHeroIndex ? 'active' : ''}`;
-                    card.innerHTML = `
-                    <div class="avatar">${base ? base.avatar : '🧑'}</div>
-                    <div class="name">${hero.name || 'Anh Hùng'}</div>
-                    <div class="level">LV${hero.level}</div>
-                    <div class="rarity" style="background:${hero.rarity === 'Huyền Thoại' ? '#5a2a5a' : hero.rarity === 'Siêu Hiếm' ? '#4a3a7a' : '#2a3a5a'}">${hero.rarity || 'Thường'}</div>
-                  `;
-                    card.onclick = () => {
-                        player.activeHeroIndex = idx;
-                        renderHeroes();
-                        log(`👉 Đã chọn ${hero.name} làm chủ lực.`, 'story-info');
-                    };
-                    heroBanner.appendChild(card);
-                });
-                const activeEl = heroBanner.querySelector('.hero-card.active');
-                if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-            }
+        function addFloatingText(text, x, y, color = '#ffffff', size = 24) {
+            game.floatingTexts.push({ text, x, y, vy: -1.5, life: 50, maxLife: 50, color, size });
+        }
 
-            // ---------- SUMMON ----------
-            function summonHero() {
-                if (player.gold < 100) {
-                    log('⚠️ Cần 100 vàng để triệu hồi!', 'story-event');
-                    return;
-                }
-                // Random hero from all templates (excluding starter)
-                const available = HERO_TEMPLATES.filter(t => t.cost > 0);
-                const randomHero = available[Math.floor(Math.random() * available.length)];
-                if (!randomHero) {
-                    log('⚠️ Không có anh hùng để triệu hồi!', 'story-event');
-                    return;
-                }
-                player.gold -= 100;
-                const newHero = {
-                    id: randomHero.id,
-                    name: randomHero.name,
-                    level: 1,
-                    rarity: randomHero.rarity,
-                    xp: 0,
-                    xpNext: 30
-                };
-                player.heroes.push(newHero);
-                player.activeHeroIndex = player.heroes.length - 1;
-                log(`✨ <b>Triệu hồi thành công ${randomHero.name} (${randomHero.rarity})!</b>`, 'story-loot');
-                updateUI();
-                showReward(`✨ Triệu hồi ${randomHero.name}!`);
-            }
-
-            // ---------- UPGRADE ----------
-            function upgradeHero() {
-                if (player.heroes.length === 0) {
-                    log('⚠️ Bạn chưa có anh hùng nào để nâng cấp!', 'story-event');
-                    return;
-                }
-                if (player.gold < 50) {
-                    log('⚠️ Cần 50 vàng để nâng cấp!', 'story-event');
-                    return;
-                }
-                const hero = player.heroes[player.activeHeroIndex];
-                if (!hero) return;
-                player.gold -= 50;
-                hero.level += 1;
-                hero.xp = 0;
-                hero.xpNext = Math.floor(hero.xpNext * 1.4) + 20;
-                log(`⬆️ <b>${hero.name}</b> lên cấp ${hero.level}!`, 'story-loot');
-                updateHeroStats();
-                updateUI();
-                showReward(`⬆️ ${hero.name} LV.${hero.level}`);
-            }
-
-            // ---------- COMBAT ----------
-            function spawnEnemy() {
-                const enemies = [
-                    { name: 'Bóng Ma', hp: 30, atk: 6, def: 2, xp: 15, goldMin: 5, goldMax: 12, avatar: '👻' },
-                    { name: 'Quỷ Nhỏ', hp: 40, atk: 9, def: 3, xp: 22, goldMin: 8, goldMax: 16, avatar: '👹' },
-                    { name: 'Sói Đen', hp: 50, atk: 12, def: 4, xp: 30, goldMin: 12, goldMax: 22, avatar: '🐺' },
-                    { name: 'Thây Ma', hp: 60, atk: 14, def: 6, xp: 38, goldMin: 15, goldMax: 28, avatar: '🧟' },
-                    { name: 'Chiến Binh Bóng Tối', hp: 80, atk: 18, def: 8, xp: 50, goldMin: 20, goldMax: 35, avatar: '⚔️' },
-                    { name: 'Rồng Con', hp: 100, atk: 22, def: 10, xp: 65, goldMin: 30, goldMax: 50, avatar: '🐉' },
-                    { name: 'Boss Ác Mộng', hp: 150, atk: 30, def: 15, xp: 100, goldMin: 50, goldMax: 80, avatar: '💀' }
-                ];
-                const lv = player.level;
-                let pool = enemies;
-                if (lv <= 2) pool = enemies.slice(0, 3);
-                else if (lv <= 4) pool = enemies.slice(0, 5);
-                else pool = enemies;
-                const idx = Math.floor(Math.random() * pool.length);
-                const template = pool[idx];
-                const scale = 1 + (lv - 1) * 0.12 + (player.kills / 50) * 0.2;
-                enemy = {
-                    name: template.name,
-                    hp: Math.floor(template.hp * scale),
-                    maxHp: Math.floor(template.hp * scale),
-                    atk: Math.floor(template.atk * scale),
-                    def: Math.floor(template.def * scale),
-                    xp: Math.floor(template.xp * scale),
-                    goldMin: Math.floor(template.goldMin * scale),
-                    goldMax: Math.floor(template.goldMax * scale),
-                    avatar: template.avatar
-                };
-                sceneImg.innerHTML = `<span class="emoji-bg" style="font-size:4rem;">${enemy.avatar}</span><div class="img-overlay"></div>`;
-                log(`⚔️ <b>${enemy.name}</b> xuất hiện! (HP:${enemy.hp} | ATK:${enemy.atk})`, 'story-combat');
-            }
-
-            function fight() {
-                if (isFighting) return;
-                if (!enemy) { spawnEnemy(); return; }
-                if (player.heroes.length === 0) {
-                    log('⚠️ Bạn cần có anh hùng để chiến đấu! Hãy triệu hồi.', 'story-event');
-                    return;
-                }
-                isFighting = true;
-                btnFight.disabled = true;
-
-                // Player attack
-                const hero = player.heroes[player.activeHeroIndex] || player.heroes[0];
-                const heroTemplate = HERO_TEMPLATES.find(t => t.id === hero.id);
-                const atkBonus = hero.level * 1.5;
-                let dmg = Math.max(2, player.totalAtk + atkBonus - Math.floor(enemy.def * 0.4) + Math.floor(Math.random() * 6) - 2);
-                if (Math.random() < 0.15) {
-                    dmg = Math.floor(dmg * 1.8);
-                    log(`💥 <b>CHÍ MẠNG!</b>`, 'story-event');
-                }
-                enemy.hp -= dmg;
-                log(`⚔️ ${hero.name} gây <b>${dmg}</b> sát thương.`, 'story-narrator');
-
-                // Enemy death
-                if (enemy.hp <= 0) {
-                    enemy.hp = 0;
-                    const goldGain = Math.floor(Math.random() * (enemy.goldMax - enemy.goldMin + 1)) + enemy.goldMin;
-                    const xpGain = Math.floor(enemy.xp * (0.85 + Math.random() * 0.3));
-                    player.gold += goldGain;
-                    player.xp += xpGain;
-                    player.kills++;
-                    // Hero XP
-                    hero.xp = (hero.xp || 0) + Math.floor(xpGain * 0.3);
-                    if (hero.xp >= hero.xpNext) {
-                        hero.level++;
-                        hero.xp = 0;
-                        hero.xpNext = Math.floor(hero.xpNext * 1.4) + 20;
-                        log(`⬆️ <b>${hero.name}</b> lên cấp ${hero.level}!`, 'story-loot');
-                    }
-                    log(`💀 <b>${enemy.name}</b> bị hạ! +${xpGain} XP, +${goldGain} Vàng`, 'story-loot');
-                    checkLevelUp();
-                    showReward(`💀 Hạ ${enemy.name}! +${goldGain} vàng`);
-                    enemy = null;
-                    updateHeroStats();
-                    updateUI();
-                    setTimeout(() => {
-                        if (!autoFight) { spawnEnemy(); }
-                        isFighting = false;
-                        btnFight.disabled = false;
-                        if (autoFight) {
-                            setTimeout(fight, 2000);
+        // ========== PLAYER ATTACK (click) ==========
+        function playerAttack(mx, my) {
+            if (game.gameOver || game.win) return;
+            if (game.clickCooldown > 0) return;
+            // shoot projectile toward click
+            shootProjectile(mx, my);
+            game.clickCooldown = 12; // frames
+            // also melee if enemy near
+            const p = game.player;
+            const range = 70;
+            let hit = false;
+            for (let i = game.enemies.length-1; i >= 0; i--) {
+                const e = game.enemies[i];
+                const dx = (p.x + p.w/2) - (e.x + e.w/2);
+                const dy = (p.y + p.h/2) - (e.y + e.h/2);
+                if (Math.sqrt(dx*dx + dy*dy) < range) {
+                    const dmg = Math.max(1, p.atk - e.def + randInt(-2, 4));
+                    e.hp -= dmg;
+                    e.hitFlash = 10;
+                    spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff8844', 6);
+                    addFloatingText('-' + dmg, e.x, e.y-10, '#ffaa44', 20);
+                    if (e.hp <= 0) {
+                        // kill enemy
+                        game.gold += e.gold || 5;
+                        game.player.exp += e.exp || 10;
+                        spawnParticles(e.x + e.w/2, e.y + e.h/2, e.color || '#ffaa44', 20);
+                        addFloatingText('+' + (e.gold||5) + 'g', e.x, e.y-30, '#ffd966', 18);
+                        game.enemies.splice(i, 1);
+                        if (e.type === 'boss') {
+                            game.bossDefeated = true;
+                            game.bossActive = false;
+                            game.bossSpawned = false;
+                            addFloatingText('🏆 BOSS DEFEATED!', W/2-100, 160, '#ffd700', 40);
+                            // reward: +50 gold, +50 exp
+                            game.player.gold += 30;
+                            game.player.exp += 50;
                         }
-                    }, 300);
-                    return;
-                }
-
-                // Enemy counter
-                let enemyDmg = Math.max(1, enemy.atk - Math.floor(player.totalDef * 0.5) + Math.floor(Math.random() * 5) - 1);
-                if (Math.random() < 0.10) {
-                    enemyDmg = Math.floor(enemyDmg * 0.5);
-                    log(`🛡️ <b>Chặn đòn!</b>`, 'story-event');
-                }
-                player.hp -= enemyDmg;
-                log(`💢 <b>${enemy.name}</b> phản công: -${enemyDmg} HP`, 'story-combat');
-
-                if (player.hp <= 0) {
-                    player.hp = 0;
-                    log(`💀 <b>Bạn đã tử trận!</b> Nhấn F5 để chơi lại.`, 'story-death');
-                    btnFight.disabled = true;
-                    btnSummon.disabled = true;
-                    btnUpgrade.disabled = true;
-                    btnIdle.disabled = true;
-                    isFighting = false;
-                    updateUI();
-                    return;
-                }
-
-                isFighting = false;
-                btnFight.disabled = false;
-                updateUI();
-                if (autoFight && enemy) {
-                    setTimeout(fight, 2000);
-                }
-            }
-
-            // ---------- LEVEL UP ----------
-            function checkLevelUp() {
-                while (player.xp >= player.xpNext) {
-                    player.level++;
-                    player.xp -= player.xpNext;
-                    player.xpNext = Math.floor(player.xpNext * 1.5) + 30;
-                    player.maxHp = Math.floor(player.maxHp * 1.12) + 10;
-                    player.hp = player.maxHp;
-                    player.maxMp = Math.floor(player.maxMp * 1.10) + 5;
-                    player.mp = player.maxMp;
-                    player.atk += 2;
-                    player.def += 1;
-                    log(`⬆️ <b>LÊN CẤP ${player.level}!</b> HP/MP/ATK/DEF tăng!`, 'story-loot');
-                    showReward(`🎉 Lên cấp ${player.level}!`);
-                    updateUI();
-                }
-            }
-
-            // ---------- REWARD ----------
-            function showReward(text) {
-                rewardPopup.textContent = `🎁 ${text}`;
-                rewardPopup.style.display = 'block';
-                setTimeout(() => { rewardPopup.style.display = 'none'; }, 2000);
-            }
-
-            // ---------- TOGGLE AUTO FIGHT ----------
-            function toggleAutoFight() {
-                autoFight = !autoFight;
-                btnIdle.textContent = autoFight ? '⏸️ Dừng tự động' : '⏳ Tự động';
-                btnIdle.className = autoFight ? 'act-btn boss' : 'act-btn';
-                if (autoFight) {
-                    log('⏳ <b>CHẾ ĐỘ TỰ ĐỘNG</b> đã bật!', 'story-info');
-                    if (!enemy) spawnEnemy();
-                    setTimeout(fight, 1000);
-                } else {
-                    log('⏹️ Đã tắt chế độ tự động.', 'story-info');
-                }
-            }
-
-            // ---------- INIT ----------
-            function init() {
-                const starter = HERO_TEMPLATES[0];
-                player.heroes.push({
-                    id: starter.id,
-                    name: starter.name,
-                    level: 1,
-                    rarity: starter.rarity,
-                    xp: 0,
-                    xpNext: 30
-                });
-                player.activeHeroIndex = 0;
-                player.gold = 50;
-                updateHeroStats();
-                updateUI();
-                renderHeroes();
-                spawnEnemy();
-                log('🌳 <b>LỰA CHỌN CỦA LINH HỒN</b> - Hãy bảo vệ Cây Thế Giới!', 'story-info');
-                log('⚔️ Chiến đấu để nhận vàng và triệu hồi thêm anh hùng.', 'story-narrator');
-
-                btnFight.onclick = fight;
-                btnSummon.onclick = summonHero;
-                btnUpgrade.onclick = upgradeHero;
-                btnIdle.onclick = toggleAutoFight;
-
-                // Idle tick every 2s (for auto-fight)
-                if (idleInterval) clearInterval(idleInterval);
-                idleInterval = setInterval(() => {
-                    if (autoFight && !isFighting) {
-                        if (!enemy) spawnEnemy();
-                        fight();
+                        // check level up
+                        checkLevelUp();
                     }
-                }, 2500);
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit) {
+                // visual feedback for shoot
+                spawnParticles(p.x + p.w/2, p.y + p.h/2, '#88ccff', 5);
+            }
+        }
+
+        // ========== LEVEL UP ==========
+        function checkLevelUp() {
+            const p = game.player;
+            while (p.exp >= p.expNext) {
+                p.exp -= p.expNext;
+                p.level++;
+                p.expNext = Math.floor(p.expNext * 1.4) + 15;
+                p.maxHp += 15;
+                p.hp = p.maxHp;
+                p.baseAtk += 3;
+                p.baseDef += 1;
+                p.atk = p.baseAtk;
+                p.def = p.baseDef;
+                addFloatingText('⬆ LEVEL UP! Lv.' + p.level, W/2-80, 200, '#66ff88', 36);
+                spawnParticles(W/2, 200, '#66ff88', 30);
+                // after level up, if boss not spawned and level multiple of 5, spawn boss
+                if (p.level % 5 === 0 && !game.bossSpawned && !game.bossDefeated) {
+                    // will spawn on next enemy spawn tick
+                }
+                updateUI();
+            }
+        }
+
+        // ========== UPDATE UI ==========
+        function updateUI() {
+            const p = game.player;
+            hpSpan.textContent = Math.floor(p.hp) + '/' + p.maxHp;
+            atkSpan.textContent = p.atk;
+            defSpan.textContent = p.def;
+            goldSpan.textContent = game.gold;
+        }
+
+        // ========== GAME LOOP UPDATE ==========
+        function update() {
+            if (game.gameOver || game.win) return;
+
+            const p = game.player;
+            game.frame++;
+            if (game.clickCooldown > 0) game.clickCooldown--;
+
+            // enemy spawn
+            game.enemySpawnTimer++;
+            if (game.enemySpawnTimer >= game.enemySpawnInterval) {
+                game.enemySpawnTimer = 0;
+                // reduce interval as level increases
+                game.enemySpawnInterval = Math.max(30, 70 - game.player.level * 2);
+                if (!game.bossActive || game.bossDefeated) {
+                    spawnEnemy();
+                }
             }
 
-            init();
+            // ===== update enemies =====
+            for (let i = game.enemies.length-1; i >= 0; i--) {
+                const e = game.enemies[i];
+                if (e.hitFlash > 0) e.hitFlash--;
 
-            window.addEventListener('beforeunload', () => {
-                if (idleInterval) clearInterval(idleInterval);
-            });
-        })();
-    </script>
+                // move toward player
+                const dx = (p.x + p.w/2) - (e.x + e.w/2);
+                const dy = (p.y + p.h/2) - (e.y + e.h/2);
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 50) {
+                    const move = Math.min(e.speed, dist);
+                    e.x += (dx / dist) * move;
+                    e.y += (dy / dist) * move;
+                } else {
+                    // attack player
+                    if (e.attackCooldown <= 0) {
+                        const dmg = Math.max(1, e.atk - p.def + randInt(-2, 3));
+                        p.hp -= dmg;
+                        e.attackCooldown = 40;
+                        spawnParticles(p.x + p.w/2, p.y + p.h/2, '#ff3333', 8);
+                        addFloatingText('-' + dmg, p.x, p.y-10, '#ff3333', 22);
+                        if (p.hp <= 0) {
+                            p.hp = 0;
+                            game.gameOver = true;
+                            addFloatingText('💀 YOU DIED', W/2-80, H/2-20, '#ff0000', 48);
+                        }
+                        updateUI();
+                    }
+                }
+                if (e.attackCooldown > 0) e.attackCooldown--;
+
+                // boundary clamp
+                e.x = Math.max(10, Math.min(W - e.w - 10, e.x));
+                e.y = Math.max(30, Math.min(350, e.y));
+            }
+
+            // ===== update projectiles =====
+            for (let i = game.projectiles.length-1; i >= 0; i--) {
+                const proj = game.projectiles[i];
+                proj.x += proj.vx;
+                proj.y += proj.vy;
+                proj.life--;
+                // hit enemies
+                let hit = false;
+                for (let j = game.enemies.length-1; j >= 0; j--) {
+                    const e = game.enemies[j];
+                    if (proj.x > e.x && proj.x < e.x + e.w && proj.y > e.y && proj.y < e.y + e.h) {
+                        const dmg = Math.max(1, proj.damage - e.def + randInt(-2, 4));
+                        e.hp -= dmg;
+                        e.hitFlash = 8;
+                        spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff8844', 8);
+                        addFloatingText('-' + dmg, e.x, e.y-10, '#ffaa44', 20);
+                        if (e.hp <= 0) {
+                            game.gold += e.gold || 5;
+                            game.player.exp += e.exp || 10;
+                            spawnParticles(e.x + e.w/2, e.y + e.h/2, e.color || '#ffaa44', 20);
+                            addFloatingText('+' + (e.gold||5) + 'g', e.x, e.y-30, '#ffd966', 18);
+                            game.enemies.splice(j, 1);
+                            if (e.type === 'boss') {
+                                game.bossDefeated = true;
+                                game.bossActive = false;
+                                game.bossSpawned = false;
+                                addFloatingText('🏆 BOSS DEFEATED!', W/2-100, 160, '#ffd700', 40);
+                                game.player.gold += 30;
+                                game.player.exp += 50;
+                            }
+                            checkLevelUp();
+                            updateUI();
+                        }
+                        hit = true;
+                        break;
+                    }
+                }
+                if (hit || proj.life <= 0 || proj.x < 0 || proj.x > W || proj.y < 0 || proj.y > H) {
+                    game.projectiles.splice(i, 1);
+                }
+            }
+
+            // ===== update particles =====
+            for (let i = game.particles.length-1; i >= 0; i--) {
+                const pt = game.particles[i];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                pt.vy += 0.05;
+                pt.vx *= pt.decay || 0.98;
+                pt.vy *= pt.decay || 0.98;
+                pt.life--;
+                if (pt.life <= 0) {
+                    game.particles.splice(i, 1);
+                }
+            }
+
+            // ===== floating texts =====
+            for (let i = game.floatingTexts.length-1; i >= 0; i--) {
+                const ft = game.floatingTexts[i];
+                ft.y += ft.vy;
+                ft.life--;
+                if (ft.life <= 0) game.floatingTexts.splice(i, 1);
+            }
+
+            // ===== check win condition =====
+            if (game.player.level >= 10 && game.bossDefeated) {
+                game.win = true;
+                addFloatingText('🎉 YOU WIN!', W/2-80, H/2-20, '#ffd700', 48);
+            }
+
+            // auto attack nearby enemies (if no click)
+            if (game.frame % 30 === 0 && game.enemies.length > 0) {
+                // find nearest enemy
+                let nearest = null;
+                let nearDist = 200;
+                for (const e of game.enemies) {
+                    const dx = (p.x + p.w/2) - (e.x + e.w/2);
+                    const dy = (p.y + p.h/2) - (e.y + e.h/2);
+                    const d = Math.sqrt(dx*dx + dy*dy);
+                    if (d < nearDist) { nearDist = d; nearest = e; }
+                }
+                if (nearest) {
+                    shootProjectile(nearest.x + nearest.w/2, nearest.y + nearest.h/2);
+                }
+            }
+
+            updateUI();
+        }
+
+        // ========== RENDER ==========
+        function render() {
+            ctx.clearRect(0, 0, W, H);
+            // background
+            const grad = ctx.createRadialGradient(450, 300, 100, 450, 300, 500);
+            grad.addColorStop(0, '#1e2a4a');
+            grad.addColorStop(1, '#0a1020');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // ground line
+            ctx.fillStyle = '#2a3a5a';
+            ctx.fillRect(0, 430, W, 4);
+
+            // ===== draw enemies =====
+            for (const e of game.enemies) {
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 12;
+                // body
+                ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : e.color;
+                ctx.beginPath();
+                ctx.roundRect(e.x, e.y, e.w, e.h, 8);
+                ctx.fill();
+                // eyes
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(e.x + 8, e.y + 12, 4, 0, Math.PI*2);
+                ctx.arc(e.x + e.w - 8, e.y + 12, 4, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(e.x + 6, e.y + 10, 2, 0, Math.PI*2);
+                ctx.arc(e.x + e.w - 10, e.y + 10, 2, 0, Math.PI*2);
+                ctx.fill();
+
+                // HP bar
+                const hpPercent = e.hp / e.maxHp;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(e.x, e.y - 12, e.w, 6);
+                ctx.fillStyle = hpPercent > 0.5 ? '#4caf50' : (hpPercent > 0.25 ? '#ffaa44' : '#f44336');
+                ctx.fillRect(e.x, e.y - 12, e.w * hpPercent, 6);
+
+                // boss crown
+                if (e.type === 'boss') {
+                    ctx.font = '28px sans-serif';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('👑', e.x + e.w/2 - 14, e.y - 18);
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            // ===== draw projectiles =====
+            for (const proj of game.projectiles) {
+                ctx.shadowColor = '#ffe066';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI*2);
+                ctx.fillStyle = proj.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // ===== draw player =====
+            const p = game.player;
+            ctx.shadowColor = 'rgba(100,150,255,0.4)';
+            ctx.shadowBlur = 20;
+            // body
+            ctx.fillStyle = '#4a8af4';
+            ctx.beginPath();
+            ctx.roundRect(p.x, p.y, p.w, p.h, 10);
+            ctx.fill();
+            // head
+            ctx.fillStyle = '#f0c8a0';
+            ctx.beginPath();
+            ctx.arc(p.x + p.w/2, p.y - 6, 18, 0, Math.PI*2);
+            ctx.fill();
+            // eyes
+            ctx.fillStyle = '#222';
+            ctx.beginPath();
+            ctx.arc(p.x + p.w/2 - 8, p.y - 10, 4, 0, Math.PI*2);
+            ctx.arc(p.x + p.w/2 + 8, p.y - 10, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(p.x + p.w/2 - 10, p.y - 12, 2, 0, Math.PI*2);
+            ctx.arc(p.x + p.w/2 + 6, p.y - 12, 2, 0, Math.PI*2);
+            ctx.fill();
+            // hat
+            ctx.fillStyle = '#2a4a8a';
+            ctx.beginPath();
+            ctx.ellipse(p.x + p.w/2, p.y - 22, 20, 8, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // ===== draw particles =====
+            for (const pt of game.particles) {
+                const alpha = pt.life / pt.maxLife;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.radius * alpha, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // ===== floating texts =====
+            for (const ft of game.floatingTexts) {
+                const alpha = ft.life / ft.maxLife;
+                ctx.globalAlpha = alpha;
+                ctx.font = `bold ${ft.size}px 'Segoe UI', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.shadowBlur = 0;
+            }
+            ctx.globalAlpha = 1;
+
+            // ===== game over / win overlay =====
+            if (game.gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.font = 'bold 56px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ff3333';
+                ctx.shadowColor = '#ff0000';
+                ctx.shadowBlur = 30;
+                ctx.fillText('GAME OVER', W/2, H/2);
+                ctx.shadowBlur = 0;
+            }
+            if (game.win) {
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(0, 0, W, H);
+                ctx.font = 'bold 56px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = '#ffaa00';
+                ctx.shadowBlur = 40;
+                ctx.fillText('VICTORY!', W/2, H/2);
+                ctx.shadowBlur = 0;
+            }
+
+            // FPS / level info
+            ctx.font = '14px monospace';
+            ctx.fillStyle = '#8899bb';
+            ctx.textAlign = 'left';
+            ctx.fillText('Lv.' + game.player.level + '  EXP: ' + Math.floor(game.player.exp) + '/' + game.player.expNext, 16, 28);
+            ctx.textAlign = 'right';
+            ctx.fillText('Enemies: ' + game.enemies.length + ' | Boss: ' + (game.bossActive ? 'Active' : 'Defeated'), W-16, 28);
+        }
+
+        // roundRect polyfill for canvas
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+                const r = typeof radii === 'number' ? radii : (radii || 0);
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        // ========== GAME LOOP ==========
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ========== EVENT LISTENERS ==========
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
+            playerAttack(mx, my);
+        });
+
+        // touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mx = (touch.clientX - rect.left) * scaleX;
+            const my = (touch.clientY - rect.top) * scaleY;
+            playerAttack(mx, my);
+        }, { passive: false });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            // reset game state
+            game = {
+                player: { x: 400, y: 480, w: 40, h: 50, hp: 100, maxHp: 100, atk: 12, def: 5, baseAtk: 12, baseDef: 5, level: 1, exp: 0, expNext: 30, gold: 0 },
+                enemies: [],
+                projectiles: [],
+                particles: [],
+                enemySpawnTimer: 0,
+                enemySpawnInterval: 70,
+                maxEnemies: 6,
+                frame: 0,
+                gameOver: false,
+                win: false,
+                bossActive: false,
+                bossSpawned: false,
+                bossDefeated: false,
+                clickCooldown: 0,
+                floatingTexts: []
+            };
+            updateUI();
+            addFloatingText('🔄 Restarted', W/2-60, 200, '#88ccff', 28);
+        });
+
+        // ========== START ==========
+        updateUI();
+        gameLoop();
+
+        // initial spawn
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => spawnEnemy(), i * 300);
+        }
+
+    })();
+</script>
 </body>
 </html>
