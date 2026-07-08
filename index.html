@@ -1,627 +1,807 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Spirit Wars 2D</title>
+    <title>Anime Gacha - Spirit Wars</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: #0a0f1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; }
-        #gameContainer { background: #141c2b; padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #2a3a55; }
-        canvas { display: block; width: 900px; height: 600px; border-radius: 16px; background: #1b2538; cursor: pointer; box-shadow: inset 0 0 50px rgba(0,0,0,0.6); }
-        #ui { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: #b8d0e8; font-weight: bold; text-shadow: 0 2px 4px #000; }
-        .stat { background: #0f172a; padding: 8px 18px; border-radius: 30px; border: 1px solid #2f4a6b; font-size: 16px; display: flex; align-items: center; gap: 12px; }
-        .stat span { color: #ffd966; }
-        button { background: #2a4a6a; border: none; color: white; padding: 8px 24px; border-radius: 40px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s; border: 1px solid #4a7a9a; box-shadow: 0 4px 0 #0a1a2a; }
-        button:hover { background: #3a6a8a; transform: translateY(-2px); box-shadow: 0 6px 0 #0a1a2a; }
-        button:active { transform: translateY(4px); box-shadow: 0 1px 0 #0a1a2a; }
-        #resetBtn { background: #4a2a3a; border-color: #7a4a5a; }
-        #resetBtn:hover { background: #6a3a4a; }
-        @media (max-width: 920px) { canvas { width: 100%; height: auto; aspect-ratio: 3/2; } #gameContainer { padding: 10px; width: 98vw; } }
+        body {
+            background: #0a0e1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+        #gameContainer {
+            background: #111827;
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            border: 1px solid #2a3a6a;
+            max-width: 1000px;
+            width: 100%;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #c8d8ff;
+            padding: 8px 16px;
+            background: #1a2540;
+            border-radius: 40px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        #topBar .stat {
+            background: #0f172a;
+            padding: 4px 16px;
+            border-radius: 30px;
+            border: 1px solid #2f4a7a;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #topBar .stat span { color: #ffd966; }
+        #mainUI {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #cityView {
+            background: #1b2538;
+            border-radius: 24px;
+            padding: 16px;
+            border: 1px solid #2a3a5a;
+            min-height: 200px;
+            background-image: radial-gradient(circle at 20% 30%, #2a3a6a 0%, #0f172a 80%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #cityTitle {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd966;
+            text-shadow: 0 0 20px #ffaa44;
+            letter-spacing: 4px;
+        }
+        #citySub {
+            color: #aabbdd;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+        #menuGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .menuBtn {
+            background: #1f2a4a;
+            border: 2px solid #2f4a7a;
+            border-radius: 20px;
+            padding: 14px 8px;
+            color: #c8d8ff;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+            box-shadow: 0 4px 0 #0a1220;
+        }
+        .menuBtn:hover { background: #2a3a6a; transform: translateY(-2px); box-shadow: 0 6px 0 #0a1220; }
+        .menuBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #0a1220; }
+        .menuBtn .icon { font-size: 28px; display: block; margin-bottom: 2px; }
+
+        #contentArea {
+            background: #0f172a;
+            border-radius: 24px;
+            padding: 16px;
+            min-height: 320px;
+            border: 1px solid #1f2a4a;
+            margin-top: 4px;
+            position: relative;
+        }
+        #contentArea h3 {
+            color: #ffd966;
+            margin-bottom: 12px;
+            font-size: 20px;
+            border-bottom: 1px solid #2a3a5a;
+            padding-bottom: 8px;
+        }
+
+        /* Gacha */
+        #gachaPanel { display: none; }
+        #gachaPanel.active { display: block; }
+        .gachaBtn {
+            background: #4a2a6a;
+            border: none;
+            color: white;
+            padding: 14px 30px;
+            border-radius: 60px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #1a0a2a;
+            transition: all 0.1s;
+            margin: 8px;
+        }
+        .gachaBtn:active { transform: translateY(6px); box-shadow: 0 1px 0 #1a0a2a; }
+        .gachaBtn:disabled { opacity: 0.4; transform: translateY(4px); box-shadow: 0 2px 0 #1a0a2a; }
+        .heroCard {
+            display: inline-block;
+            background: #1a2540;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 8px;
+            border: 2px solid #2f4a7a;
+            width: 140px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .heroCard.rare { border-color: #4a8aff; background: #1a2a5a; }
+        .heroCard.epic { border-color: #aa66ff; background: #2a1a5a; }
+        .heroCard.legend { border-color: #ffaa44; background: #3a2a1a; box-shadow: 0 0 30px #ffaa44; }
+        .heroCard .avatar { font-size: 48px; display: block; margin: 4px 0; }
+        .heroCard .hName { font-weight: bold; color: #fff; }
+        .heroCard .hStats { font-size: 12px; color: #aabbdd; }
+        .heroCard .upgradeBtn {
+            background: #2a6a4a;
+            border: none;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 30px;
+            margin-top: 6px;
+            cursor: pointer;
+        }
+
+        /* Combat */
+        #combatPanel { display: none; }
+        #combatPanel.active { display: block; }
+        #battleCanvas {
+            width: 100%;
+            height: 300px;
+            background: #0a1220;
+            border-radius: 16px;
+            border: 1px solid #2a3a5a;
+            cursor: pointer;
+        }
+
+        /* Backpack */
+        #backpackPanel { display: none; }
+        #backpackPanel.active { display: block; }
+        .heroGrid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+        /* Campaign */
+        #campaignPanel { display: none; }
+        #campaignPanel.active { display: block; }
+        .campaignStage {
+            background: #1a2540;
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #4a8aff;
+        }
+
+        /* Adventure */
+        #adventurePanel { display: none; }
+        #adventurePanel.active { display: block; }
+
+        /* Floating animation */
+        .floatText {
+            position: absolute;
+            font-weight: bold;
+            font-size: 24px;
+            color: #ffd700;
+            pointer-events: none;
+            animation: floatUp 1.2s forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-80px); }
+        }
+
+        @media (max-width: 600px) {
+            #menuGrid { grid-template-columns: repeat(2, 1fr); }
+            .heroCard { width: 100px; }
+        }
     </style>
 </head>
 <body>
 <div id="gameContainer">
-    <canvas id="gameCanvas" width="900" height="600"></canvas>
-    <div id="ui">
-        <div class="stat">❤️ HP: <span id="hpDisplay">100</span></div>
-        <div class="stat">⚔️ ATK: <span id="atkDisplay">12</span></div>
-        <div class="stat">🛡️ DEF: <span id="defDisplay">5</span></div>
-        <div class="stat">💰 Gold: <span id="goldDisplay">0</span></div>
-        <button id="resetBtn">↺ Restart</button>
+    <div id="topBar">
+        <div class="stat">⭐ <span id="gemsDisplay">100</span></div>
+        <div class="stat">💰 <span id="goldDisplay">500</span></div>
+        <div class="stat">🏆 <span id="winDisplay">0</span></div>
+        <div style="font-size:14px; color:#8899bb;">Lv.<span id="playerLevel">1</span></div>
+    </div>
+    <div id="mainUI">
+        <div id="cityView">
+            <div id="cityTitle">🏯 Main City</div>
+            <div id="citySub">Aeria - Cây Thế Giới</div>
+            <div style="display:flex; gap:16px; margin-top:10px; flex-wrap:wrap; justify-content:center;">
+                <span style="background:#1a2a4a; padding:4px 16px; border-radius:30px;">⚔️ <span id="heroCount">0</span> tướng</span>
+                <span style="background:#1a2a4a; padding:4px 16px; border-radius:30px;">📊 <span id="totalPower">0</span> sức mạnh</span>
+            </div>
+        </div>
+        <div id="menuGrid">
+            <div class="menuBtn" data-tab="hero">⚔️<br>Hero</div>
+            <div class="menuBtn" data-tab="campaign">📜<br>Campaign</div>
+            <div class="menuBtn" data-tab="backpack">🎒<br>Backpack</div>
+            <div class="menuBtn" data-tab="adventure">🌋<br>Adventure</div>
+        </div>
+        <div id="contentArea">
+            <!-- Hero Panel -->
+            <div id="heroPanel" class="active">
+                <h3>⚔️ Đội hình của bạn</h3>
+                <div id="heroList" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;"></div>
+                <div style="text-align:center; margin-top:16px;">
+                    <button class="gachaBtn" id="gacha1Btn">🎲 Gacha 1x (50 gems)</button>
+                    <button class="gachaBtn" id="gacha10Btn">🎰 Gacha 10x (450 gems)</button>
+                </div>
+                <div id="gachaResult" style="margin-top:16px; min-height:60px; text-align:center; color:#aabbdd;"></div>
+            </div>
+            <!-- Campaign Panel -->
+            <div id="campaignPanel">
+                <h3>📜 Chiến dịch</h3>
+                <div id="campaignList"></div>
+            </div>
+            <!-- Backpack Panel -->
+            <div id="backpackPanel">
+                <h3>🎒 Túi đồ</h3>
+                <div id="backpackList" class="heroGrid"></div>
+            </div>
+            <!-- Adventure Panel -->
+            <div id="adventurePanel">
+                <h3>🌋 Phiêu lưu</h3>
+                <canvas id="battleCanvas" width="900" height="300"></canvas>
+                <div style="display:flex; justify-content:space-between; margin-top:10px; color:#aabbdd;">
+                    <span>⚔️ <span id="battleStatus">Sẵn sàng</span></span>
+                    <button id="adventureBtn" style="background:#6a3a8a; border:none; color:white; padding:8px 30px; border-radius:40px; font-weight:bold; cursor:pointer;">⚔️ Tấn công</button>
+                </div>
+                <div id="battleLog" style="margin-top:8px; background:#0a1220; border-radius:12px; padding:8px; max-height:80px; overflow-y:auto; color:#88ccff; font-size:13px;"></div>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
-    (function(){
-        // ========== CONFIG ==========
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const W = 900, H = 600;
+    // ============================================================
+    //  GAME STATE
+    // ============================================================
+    const state = {
+        gems: 100,
+        gold: 500,
+        wins: 0,
+        playerLevel: 1,
+        heroes: [],          // { id, name, rarity, atk, def, hp, maxHp, level, exp, avatar, type, element }
+        inventory: [],       // item objects
+        currentTab: 'hero',
+        battle: {
+            enemy: null,
+            playerTeam: [],
+            turn: 0,
+            log: [],
+            animating: false,
+        }
+    };
 
-        // UI elements
-        const hpSpan = document.getElementById('hpDisplay');
-        const atkSpan = document.getElementById('atkDisplay');
-        const defSpan = document.getElementById('defDisplay');
-        const goldSpan = document.getElementById('goldDisplay');
+    // ============================================================
+    //  HERO TEMPLATES (Anime style)
+    // ============================================================
+    const HERO_TEMPLATES = [
+        { id: 'kirito', name: 'Kirito', rarity: 'legend', avatar: '⚔️', atk: 28, def: 14, hp: 110, element: 'dark', type: 'swordsman' },
+        { id: 'asuna', name: 'Asuna', rarity: 'epic', avatar: '🌸', atk: 24, def: 12, hp: 95, element: 'light', type: 'rapier' },
+        { id: 'naruto', name: 'Naruto', rarity: 'epic', avatar: '🍥', atk: 22, def: 10, hp: 120, element: 'wind', type: 'ninja' },
+        { id: 'sasuke', name: 'Sasuke', rarity: 'legend', avatar: '🌀', atk: 30, def: 10, hp: 100, element: 'fire', type: 'shinobi' },
+        { id: 'sakura', name: 'Sakura', rarity: 'rare', avatar: '💮', atk: 16, def: 18, hp: 90, element: 'earth', type: 'healer' },
+        { id: 'goku', name: 'Goku', rarity: 'legend', avatar: '🐉', atk: 35, def: 8, hp: 140, element: 'fire', type: 'saiyan' },
+        { id: 'luffy', name: 'Luffy', rarity: 'epic', avatar: '🏴‍☠️', atk: 26, def: 12, hp: 130, element: 'water', type: 'pirate' },
+        { id: 'nami', name: 'Nami', rarity: 'rare', avatar: '🍊', atk: 18, def: 8, hp: 75, element: 'lightning', type: 'navigator' },
+        { id: 'zoro', name: 'Zoro', rarity: 'epic', avatar: '🗡️', atk: 28, def: 10, hp: 115, element: 'wind', type: 'swordsman' },
+        { id: 'tanjiro', name: 'Tanjiro', rarity: 'epic', avatar: '🔥', atk: 24, def: 14, hp: 105, element: 'fire', type: 'demon slayer' },
+        { id: 'nezuko', name: 'Nezuko', rarity: 'rare', avatar: '🎀', atk: 20, def: 12, hp: 95, element: 'dark', type: 'demon' },
+        { id: 'gojo', name: 'Gojo', rarity: 'legend', avatar: '👁️', atk: 32, def: 16, hp: 125, element: 'light', type: 'sorcerer' },
+        { id: 'itadori', name: 'Itadori', rarity: 'rare', avatar: '👊', atk: 22, def: 10, hp: 110, element: 'fire', type: 'martial artist' },
+        { id: 'megumi', name: 'Megumi', rarity: 'rare', avatar: '🐕', atk: 18, def: 14, hp: 90, element: 'earth', type: 'summoner' },
+        { id: 'eren', name: 'Eren', rarity: 'epic', avatar: '⚡', atk: 26, def: 12, hp: 125, element: 'wind', type: 'titan' },
+        { id: 'mikasa', name: 'Mikasa', rarity: 'rare', avatar: '🪶', atk: 24, def: 10, hp: 100, element: 'wind', type: 'soldier' },
+        { id: 'levi', name: 'Levi', rarity: 'legend', avatar: '⚔️', atk: 34, def: 12, hp: 110, element: 'dark', type: 'captain' },
+        { id: 'asta', name: 'Asta', rarity: 'epic', avatar: '📖', atk: 28, def: 8, hp: 115, element: 'light', type: 'mage' },
+        { id: 'yuno', name: 'Yuno', rarity: 'rare', avatar: '🍃', atk: 20, def: 12, hp: 90, element: 'wind', type: 'mage' },
+        { id: 'bell', name: 'Bell', rarity: 'rare', avatar: '🗡️', atk: 18, def: 10, hp: 80, element: 'light', type: 'adventurer' },
+    ];
 
-        // ========== GAME STATE ==========
-        let game = {
-            player: { x: 400, y: 480, w: 40, h: 50, hp: 100, maxHp: 100, atk: 12, def: 5, baseAtk: 12, baseDef: 5, level: 1, exp: 0, expNext: 30, gold: 0 },
-            enemies: [],
-            projectiles: [],
-            particles: [],
-            enemySpawnTimer: 0,
-            enemySpawnInterval: 70, // frames
-            maxEnemies: 6,
-            frame: 0,
-            gameOver: false,
-            win: false,
-            bossActive: false,
-            bossSpawned: false,
-            bossDefeated: false,
-            clickCooldown: 0,
-            // floating texts
-            floatingTexts: []
+    // Rarity colors
+    const RARITY_COLORS = {
+        common: '#aabbdd',
+        rare: '#4a8aff',
+        epic: '#aa66ff',
+        legend: '#ffaa44'
+    };
+    const RARITY_ORDER = ['common','rare','epic','legend'];
+
+    // ============================================================
+    //  UTILITY
+    // ============================================================
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+    function randInt(min, max) { return Math.floor(rand(min, max+1)); }
+    function pick(arr) { return arr[randInt(0, arr.length-1)]; }
+
+    function generateHero() {
+        // weighted rarity
+        const r = Math.random();
+        let rarity;
+        if (r < 0.05) rarity = 'legend';
+        else if (r < 0.20) rarity = 'epic';
+        else if (r < 0.55) rarity = 'rare';
+        else rarity = 'common';
+
+        // pick template matching rarity (or higher if not enough)
+        let pool = HERO_TEMPLATES.filter(h => h.rarity === rarity);
+        if (pool.length === 0) pool = HERO_TEMPLATES.filter(h => h.rarity === 'rare');
+        if (pool.length === 0) pool = HERO_TEMPLATES;
+
+        const template = pick(pool);
+        // scale stats based on rarity
+        const rarityMult = { common: 0.7, rare: 1.0, epic: 1.4, legend: 2.0 };
+        const mult = rarityMult[rarity] || 1.0;
+        return {
+            ...template,
+            rarity: rarity,
+            atk: Math.floor(template.atk * mult * (0.9 + rand(0,0.2))),
+            def: Math.floor(template.def * mult * (0.9 + rand(0,0.2))),
+            hp: Math.floor(template.hp * mult * (0.9 + rand(0,0.2))),
+            maxHp: Math.floor(template.hp * mult * (0.9 + rand(0,0.2))),
+            level: 1,
+            exp: 0,
+            expNext: 20,
         };
+    }
 
-        // ========== UTILITY ==========
-        function rand(min, max) { return Math.random() * (max - min) + min; }
-        function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+    // ============================================================
+    //  UI UPDATE
+    // ============================================================
+    function updateUI() {
+        document.getElementById('gemsDisplay').textContent = state.gems;
+        document.getElementById('goldDisplay').textContent = state.gold;
+        document.getElementById('winDisplay').textContent = state.wins;
+        document.getElementById('playerLevel').textContent = state.playerLevel;
+        document.getElementById('heroCount').textContent = state.heroes.length;
+        const power = state.heroes.reduce((sum, h) => sum + h.atk + h.def + Math.floor(h.hp/5), 0);
+        document.getElementById('totalPower').textContent = power;
+        renderHeroList();
+        renderBackpack();
+        renderCampaign();
+        updateBattleUI();
+    }
 
-        // ========== ENEMY FACTORY ==========
-        function createEnemy(type, x, y) {
-            const base = {
-                x: x || rand(60, W-60),
-                y: y || rand(60, 300),
-                w: 36, h: 42,
-                speed: 1.2 + Math.random() * 0.8,
-                type: type || 'goblin',
-                state: 'idle',
-                attackCooldown: 0,
-                hitFlash: 0
-            };
-            switch(base.type) {
-                case 'goblin':
-                    return { ...base, hp: 30, maxHp: 30, atk: 8, def: 2, exp: 12, gold: 5, color: '#4caf50', speed: 1.6 };
-                case 'skeleton':
-                    return { ...base, hp: 45, maxHp: 45, atk: 12, def: 3, exp: 18, gold: 8, color: '#b0b0b0', speed: 1.2 };
-                case 'shadow':
-                    return { ...base, hp: 60, maxHp: 60, atk: 15, def: 5, exp: 25, gold: 12, color: '#7b4a9e', speed: 1.0 };
-                case 'boss':
-                    return { ...base, hp: 200, maxHp: 200, atk: 22, def: 8, exp: 80, gold: 50, color: '#c0392b', speed: 0.8, w: 64, h: 72, type: 'boss' };
-                default:
-                    return { ...base, hp: 30, maxHp: 30, atk: 8, def: 2, exp: 12, gold: 5, color: '#4caf50', speed: 1.6 };
-            }
+    function renderHeroList() {
+        const container = document.getElementById('heroList');
+        if (state.heroes.length === 0) {
+            container.innerHTML = '<div style="color:#8899bb; padding:20px;">Bạn chưa có tướng. Hãy Gacha!</div>';
+            return;
         }
-
-        // ========== SPAWN ENEMY ==========
-        function spawnEnemy() {
-            if (game.gameOver || game.win) return;
-            if (game.bossActive && game.enemies.length >= 1) return; // boss fight: only boss
-            if (game.enemies.length >= game.maxEnemies) return;
-
-            let type = 'goblin';
-            const r = Math.random();
-            if (game.bossSpawned && !game.bossDefeated) {
-                // boss already spawned, don't spawn more
-                return;
-            }
-            // progressive difficulty
-            const lvl = game.player.level;
-            if (lvl >= 5 && r < 0.25) type = 'shadow';
-            else if (lvl >= 3 && r < 0.45) type = 'skeleton';
-            else type = 'goblin';
-
-            // boss spawn condition: every 5 levels, but only if not already spawned
-            if (lvl % 5 === 0 && lvl > 0 && !game.bossSpawned && !game.bossDefeated && !game.bossActive) {
-                type = 'boss';
-                game.bossSpawned = true;
-                game.bossActive = true;
-                // spawn boss at center top
-                const boss = createEnemy('boss', W/2 - 32, 60);
-                game.enemies.push(boss);
-                addFloatingText('👹 BOSS APPEARS!', W/2-80, 120, '#ff4444', 40);
-                return;
-            }
-
-            const enemy = createEnemy(type, rand(50, W-50), rand(40, 250));
-            game.enemies.push(enemy);
-        }
-
-        // ========== PROJECTILE ==========
-        function shootProjectile(targetX, targetY) {
-            if (game.gameOver || game.win) return;
-            const p = game.player;
-            const angle = Math.atan2(targetY - (p.y + p.h/2), targetX - (p.x + p.w/2));
-            const speed = 7;
-            const proj = {
-                x: p.x + p.w/2,
-                y: p.y + p.h/2 - 6,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                radius: 8,
-                damage: Math.floor(p.atk * (0.8 + Math.random() * 0.4)),
-                life: 120,
-                color: '#ffe066'
-            };
-            game.projectiles.push(proj);
-        }
-
-        // ========== PARTICLES ==========
-        function spawnParticles(x, y, color, count = 12) {
-            for (let i = 0; i < count; i++) {
-                const angle = rand(0, Math.PI*2);
-                const speed = rand(1, 4);
-                game.particles.push({
-                    x, y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed - 0.5,
-                    radius: rand(2, 6),
-                    life: rand(20, 50),
-                    maxLife: 50,
-                    color: color || '#ffaa44',
-                    decay: 0.97
-                });
-            }
-        }
-
-        function addFloatingText(text, x, y, color = '#ffffff', size = 24) {
-            game.floatingTexts.push({ text, x, y, vy: -1.5, life: 50, maxLife: 50, color, size });
-        }
-
-        // ========== PLAYER ATTACK (click) ==========
-        function playerAttack(mx, my) {
-            if (game.gameOver || game.win) return;
-            if (game.clickCooldown > 0) return;
-            // shoot projectile toward click
-            shootProjectile(mx, my);
-            game.clickCooldown = 12; // frames
-            // also melee if enemy near
-            const p = game.player;
-            const range = 70;
-            let hit = false;
-            for (let i = game.enemies.length-1; i >= 0; i--) {
-                const e = game.enemies[i];
-                const dx = (p.x + p.w/2) - (e.x + e.w/2);
-                const dy = (p.y + p.h/2) - (e.y + e.h/2);
-                if (Math.sqrt(dx*dx + dy*dy) < range) {
-                    const dmg = Math.max(1, p.atk - e.def + randInt(-2, 4));
-                    e.hp -= dmg;
-                    e.hitFlash = 10;
-                    spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff8844', 6);
-                    addFloatingText('-' + dmg, e.x, e.y-10, '#ffaa44', 20);
-                    if (e.hp <= 0) {
-                        // kill enemy
-                        game.gold += e.gold || 5;
-                        game.player.exp += e.exp || 10;
-                        spawnParticles(e.x + e.w/2, e.y + e.h/2, e.color || '#ffaa44', 20);
-                        addFloatingText('+' + (e.gold||5) + 'g', e.x, e.y-30, '#ffd966', 18);
-                        game.enemies.splice(i, 1);
-                        if (e.type === 'boss') {
-                            game.bossDefeated = true;
-                            game.bossActive = false;
-                            game.bossSpawned = false;
-                            addFloatingText('🏆 BOSS DEFEATED!', W/2-100, 160, '#ffd700', 40);
-                            // reward: +50 gold, +50 exp
-                            game.player.gold += 30;
-                            game.player.exp += 50;
-                        }
-                        // check level up
-                        checkLevelUp();
-                    }
-                    hit = true;
-                    break;
-                }
-            }
-            if (!hit) {
-                // visual feedback for shoot
-                spawnParticles(p.x + p.w/2, p.y + p.h/2, '#88ccff', 5);
-            }
-        }
-
-        // ========== LEVEL UP ==========
-        function checkLevelUp() {
-            const p = game.player;
-            while (p.exp >= p.expNext) {
-                p.exp -= p.expNext;
-                p.level++;
-                p.expNext = Math.floor(p.expNext * 1.4) + 15;
-                p.maxHp += 15;
-                p.hp = p.maxHp;
-                p.baseAtk += 3;
-                p.baseDef += 1;
-                p.atk = p.baseAtk;
-                p.def = p.baseDef;
-                addFloatingText('⬆ LEVEL UP! Lv.' + p.level, W/2-80, 200, '#66ff88', 36);
-                spawnParticles(W/2, 200, '#66ff88', 30);
-                // after level up, if boss not spawned and level multiple of 5, spawn boss
-                if (p.level % 5 === 0 && !game.bossSpawned && !game.bossDefeated) {
-                    // will spawn on next enemy spawn tick
-                }
-                updateUI();
-            }
-        }
-
-        // ========== UPDATE UI ==========
-        function updateUI() {
-            const p = game.player;
-            hpSpan.textContent = Math.floor(p.hp) + '/' + p.maxHp;
-            atkSpan.textContent = p.atk;
-            defSpan.textContent = p.def;
-            goldSpan.textContent = game.gold;
-        }
-
-        // ========== GAME LOOP UPDATE ==========
-        function update() {
-            if (game.gameOver || game.win) return;
-
-            const p = game.player;
-            game.frame++;
-            if (game.clickCooldown > 0) game.clickCooldown--;
-
-            // enemy spawn
-            game.enemySpawnTimer++;
-            if (game.enemySpawnTimer >= game.enemySpawnInterval) {
-                game.enemySpawnTimer = 0;
-                // reduce interval as level increases
-                game.enemySpawnInterval = Math.max(30, 70 - game.player.level * 2);
-                if (!game.bossActive || game.bossDefeated) {
-                    spawnEnemy();
-                }
-            }
-
-            // ===== update enemies =====
-            for (let i = game.enemies.length-1; i >= 0; i--) {
-                const e = game.enemies[i];
-                if (e.hitFlash > 0) e.hitFlash--;
-
-                // move toward player
-                const dx = (p.x + p.w/2) - (e.x + e.w/2);
-                const dy = (p.y + p.h/2) - (e.y + e.h/2);
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 50) {
-                    const move = Math.min(e.speed, dist);
-                    e.x += (dx / dist) * move;
-                    e.y += (dy / dist) * move;
-                } else {
-                    // attack player
-                    if (e.attackCooldown <= 0) {
-                        const dmg = Math.max(1, e.atk - p.def + randInt(-2, 3));
-                        p.hp -= dmg;
-                        e.attackCooldown = 40;
-                        spawnParticles(p.x + p.w/2, p.y + p.h/2, '#ff3333', 8);
-                        addFloatingText('-' + dmg, p.x, p.y-10, '#ff3333', 22);
-                        if (p.hp <= 0) {
-                            p.hp = 0;
-                            game.gameOver = true;
-                            addFloatingText('💀 YOU DIED', W/2-80, H/2-20, '#ff0000', 48);
-                        }
-                        updateUI();
-                    }
-                }
-                if (e.attackCooldown > 0) e.attackCooldown--;
-
-                // boundary clamp
-                e.x = Math.max(10, Math.min(W - e.w - 10, e.x));
-                e.y = Math.max(30, Math.min(350, e.y));
-            }
-
-            // ===== update projectiles =====
-            for (let i = game.projectiles.length-1; i >= 0; i--) {
-                const proj = game.projectiles[i];
-                proj.x += proj.vx;
-                proj.y += proj.vy;
-                proj.life--;
-                // hit enemies
-                let hit = false;
-                for (let j = game.enemies.length-1; j >= 0; j--) {
-                    const e = game.enemies[j];
-                    if (proj.x > e.x && proj.x < e.x + e.w && proj.y > e.y && proj.y < e.y + e.h) {
-                        const dmg = Math.max(1, proj.damage - e.def + randInt(-2, 4));
-                        e.hp -= dmg;
-                        e.hitFlash = 8;
-                        spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff8844', 8);
-                        addFloatingText('-' + dmg, e.x, e.y-10, '#ffaa44', 20);
-                        if (e.hp <= 0) {
-                            game.gold += e.gold || 5;
-                            game.player.exp += e.exp || 10;
-                            spawnParticles(e.x + e.w/2, e.y + e.h/2, e.color || '#ffaa44', 20);
-                            addFloatingText('+' + (e.gold||5) + 'g', e.x, e.y-30, '#ffd966', 18);
-                            game.enemies.splice(j, 1);
-                            if (e.type === 'boss') {
-                                game.bossDefeated = true;
-                                game.bossActive = false;
-                                game.bossSpawned = false;
-                                addFloatingText('🏆 BOSS DEFEATED!', W/2-100, 160, '#ffd700', 40);
-                                game.player.gold += 30;
-                                game.player.exp += 50;
-                            }
-                            checkLevelUp();
-                            updateUI();
-                        }
-                        hit = true;
-                        break;
-                    }
-                }
-                if (hit || proj.life <= 0 || proj.x < 0 || proj.x > W || proj.y < 0 || proj.y > H) {
-                    game.projectiles.splice(i, 1);
-                }
-            }
-
-            // ===== update particles =====
-            for (let i = game.particles.length-1; i >= 0; i--) {
-                const pt = game.particles[i];
-                pt.x += pt.vx;
-                pt.y += pt.vy;
-                pt.vy += 0.05;
-                pt.vx *= pt.decay || 0.98;
-                pt.vy *= pt.decay || 0.98;
-                pt.life--;
-                if (pt.life <= 0) {
-                    game.particles.splice(i, 1);
-                }
-            }
-
-            // ===== floating texts =====
-            for (let i = game.floatingTexts.length-1; i >= 0; i--) {
-                const ft = game.floatingTexts[i];
-                ft.y += ft.vy;
-                ft.life--;
-                if (ft.life <= 0) game.floatingTexts.splice(i, 1);
-            }
-
-            // ===== check win condition =====
-            if (game.player.level >= 10 && game.bossDefeated) {
-                game.win = true;
-                addFloatingText('🎉 YOU WIN!', W/2-80, H/2-20, '#ffd700', 48);
-            }
-
-            // auto attack nearby enemies (if no click)
-            if (game.frame % 30 === 0 && game.enemies.length > 0) {
-                // find nearest enemy
-                let nearest = null;
-                let nearDist = 200;
-                for (const e of game.enemies) {
-                    const dx = (p.x + p.w/2) - (e.x + e.w/2);
-                    const dy = (p.y + p.h/2) - (e.y + e.h/2);
-                    const d = Math.sqrt(dx*dx + dy*dy);
-                    if (d < nearDist) { nearDist = d; nearest = e; }
-                }
-                if (nearest) {
-                    shootProjectile(nearest.x + nearest.w/2, nearest.y + nearest.h/2);
-                }
-            }
-
-            updateUI();
-        }
-
-        // ========== RENDER ==========
-        function render() {
-            ctx.clearRect(0, 0, W, H);
-            // background
-            const grad = ctx.createRadialGradient(450, 300, 100, 450, 300, 500);
-            grad.addColorStop(0, '#1e2a4a');
-            grad.addColorStop(1, '#0a1020');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, W, H);
-
-            // ground line
-            ctx.fillStyle = '#2a3a5a';
-            ctx.fillRect(0, 430, W, 4);
-
-            // ===== draw enemies =====
-            for (const e of game.enemies) {
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                ctx.shadowBlur = 12;
-                // body
-                ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : e.color;
-                ctx.beginPath();
-                ctx.roundRect(e.x, e.y, e.w, e.h, 8);
-                ctx.fill();
-                // eyes
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(e.x + 8, e.y + 12, 4, 0, Math.PI*2);
-                ctx.arc(e.x + e.w - 8, e.y + 12, 4, 0, Math.PI*2);
-                ctx.fill();
-                ctx.fillStyle = '#fff';
-                ctx.beginPath();
-                ctx.arc(e.x + 6, e.y + 10, 2, 0, Math.PI*2);
-                ctx.arc(e.x + e.w - 10, e.y + 10, 2, 0, Math.PI*2);
-                ctx.fill();
-
-                // HP bar
-                const hpPercent = e.hp / e.maxHp;
-                ctx.fillStyle = '#333';
-                ctx.fillRect(e.x, e.y - 12, e.w, 6);
-                ctx.fillStyle = hpPercent > 0.5 ? '#4caf50' : (hpPercent > 0.25 ? '#ffaa44' : '#f44336');
-                ctx.fillRect(e.x, e.y - 12, e.w * hpPercent, 6);
-
-                // boss crown
-                if (e.type === 'boss') {
-                    ctx.font = '28px sans-serif';
-                    ctx.fillStyle = '#ffd700';
-                    ctx.fillText('👑', e.x + e.w/2 - 14, e.y - 18);
-                }
-                ctx.shadowBlur = 0;
-            }
-
-            // ===== draw projectiles =====
-            for (const proj of game.projectiles) {
-                ctx.shadowColor = '#ffe066';
-                ctx.shadowBlur = 20;
-                ctx.beginPath();
-                ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI*2);
-                ctx.fillStyle = proj.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-
-            // ===== draw player =====
-            const p = game.player;
-            ctx.shadowColor = 'rgba(100,150,255,0.4)';
-            ctx.shadowBlur = 20;
-            // body
-            ctx.fillStyle = '#4a8af4';
-            ctx.beginPath();
-            ctx.roundRect(p.x, p.y, p.w, p.h, 10);
-            ctx.fill();
-            // head
-            ctx.fillStyle = '#f0c8a0';
-            ctx.beginPath();
-            ctx.arc(p.x + p.w/2, p.y - 6, 18, 0, Math.PI*2);
-            ctx.fill();
-            // eyes
-            ctx.fillStyle = '#222';
-            ctx.beginPath();
-            ctx.arc(p.x + p.w/2 - 8, p.y - 10, 4, 0, Math.PI*2);
-            ctx.arc(p.x + p.w/2 + 8, p.y - 10, 4, 0, Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(p.x + p.w/2 - 10, p.y - 12, 2, 0, Math.PI*2);
-            ctx.arc(p.x + p.w/2 + 6, p.y - 12, 2, 0, Math.PI*2);
-            ctx.fill();
-            // hat
-            ctx.fillStyle = '#2a4a8a';
-            ctx.beginPath();
-            ctx.ellipse(p.x + p.w/2, p.y - 22, 20, 8, 0, 0, Math.PI*2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // ===== draw particles =====
-            for (const pt of game.particles) {
-                const alpha = pt.life / pt.maxLife;
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = pt.color;
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, pt.radius * alpha, 0, Math.PI*2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-
-            // ===== floating texts =====
-            for (const ft of game.floatingTexts) {
-                const alpha = ft.life / ft.maxLife;
-                ctx.globalAlpha = alpha;
-                ctx.font = `bold ${ft.size}px 'Segoe UI', sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.shadowColor = '#000';
-                ctx.shadowBlur = 12;
-                ctx.fillStyle = ft.color;
-                ctx.fillText(ft.text, ft.x, ft.y);
-                ctx.shadowBlur = 0;
-            }
-            ctx.globalAlpha = 1;
-
-            // ===== game over / win overlay =====
-            if (game.gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0, 0, W, H);
-                ctx.font = 'bold 56px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#ff3333';
-                ctx.shadowColor = '#ff0000';
-                ctx.shadowBlur = 30;
-                ctx.fillText('GAME OVER', W/2, H/2);
-                ctx.shadowBlur = 0;
-            }
-            if (game.win) {
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.fillRect(0, 0, W, H);
-                ctx.font = 'bold 56px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#ffd700';
-                ctx.shadowColor = '#ffaa00';
-                ctx.shadowBlur = 40;
-                ctx.fillText('VICTORY!', W/2, H/2);
-                ctx.shadowBlur = 0;
-            }
-
-            // FPS / level info
-            ctx.font = '14px monospace';
-            ctx.fillStyle = '#8899bb';
-            ctx.textAlign = 'left';
-            ctx.fillText('Lv.' + game.player.level + '  EXP: ' + Math.floor(game.player.exp) + '/' + game.player.expNext, 16, 28);
-            ctx.textAlign = 'right';
-            ctx.fillText('Enemies: ' + game.enemies.length + ' | Boss: ' + (game.bossActive ? 'Active' : 'Defeated'), W-16, 28);
-        }
-
-        // roundRect polyfill for canvas
-        if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
-                const r = typeof radii === 'number' ? radii : (radii || 0);
-                this.moveTo(x + r, y);
-                this.arcTo(x + w, y, x + w, y + h, r);
-                this.arcTo(x + w, y + h, x, y + h, r);
-                this.arcTo(x, y + h, x, y, r);
-                this.arcTo(x, y, x + w, y, r);
-                return this;
-            };
-        }
-
-        // ========== GAME LOOP ==========
-        function gameLoop() {
-            update();
-            render();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // ========== EVENT LISTENERS ==========
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const mx = (e.clientX - rect.left) * scaleX;
-            const my = (e.clientY - rect.top) * scaleY;
-            playerAttack(mx, my);
+        container.innerHTML = state.heroes.map((h, idx) => `
+            <div class="heroCard ${h.rarity}">
+                <span class="avatar">${h.avatar}</span>
+                <div class="hName">${h.name}</div>
+                <div class="hStats">⚔️${h.atk} 🛡️${h.def} ❤️${h.hp}</div>
+                <div class="hStats">Lv.${h.level} ${h.element} ${h.type}</div>
+                <button class="upgradeBtn" data-idx="${idx}">⬆ Nâng cấp (${Math.floor(h.level * 15)}g)</button>
+            </div>
+        `).join('');
+        // upgrade buttons
+        container.querySelectorAll('.upgradeBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                upgradeHero(idx);
+            });
         });
+    }
 
-        // touch support
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const mx = (touch.clientX - rect.left) * scaleX;
-            const my = (touch.clientY - rect.top) * scaleY;
-            playerAttack(mx, my);
-        }, { passive: false });
+    function renderBackpack() {
+        const container = document.getElementById('backpackList');
+        if (state.heroes.length === 0) {
+            container.innerHTML = '<div style="color:#8899bb; padding:20px;">Chưa có tướng nào.</div>';
+            return;
+        }
+        container.innerHTML = state.heroes.map(h => `
+            <div class="heroCard ${h.rarity}">
+                <span class="avatar">${h.avatar}</span>
+                <div class="hName">${h.name}</div>
+                <div class="hStats">${h.rarity.toUpperCase()} | ${h.element}</div>
+            </div>
+        `).join('');
+    }
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            // reset game state
-            game = {
-                player: { x: 400, y: 480, w: 40, h: 50, hp: 100, maxHp: 100, atk: 12, def: 5, baseAtk: 12, baseDef: 5, level: 1, exp: 0, expNext: 30, gold: 0 },
-                enemies: [],
-                projectiles: [],
-                particles: [],
-                enemySpawnTimer: 0,
-                enemySpawnInterval: 70,
-                maxEnemies: 6,
-                frame: 0,
-                gameOver: false,
-                win: false,
-                bossActive: false,
-                bossSpawned: false,
-                bossDefeated: false,
-                clickCooldown: 0,
-                floatingTexts: []
-            };
-            updateUI();
-            addFloatingText('🔄 Restarted', W/2-60, 200, '#88ccff', 28);
+    function renderCampaign() {
+        const container = document.getElementById('campaignList');
+        const stages = [
+            { name: 'Rừng Bóng Tối', power: 50, reward: 20 },
+            { name: 'Đền Cổ', power: 100, reward: 40 },
+            { name: 'Núi Lửa', power: 200, reward: 70 },
+            { name: 'Thành Cổ', power: 350, reward: 110 },
+            { name: 'Cây Thế Giới', power: 500, reward: 160 },
+        ];
+        const totalPower = state.heroes.reduce((s,h) => s + h.atk + h.def + Math.floor(h.hp/5), 0);
+        container.innerHTML = stages.map((s, i) => `
+            <div class="campaignStage">
+                <span>${i+1}. ${s.name} (⚔️${s.power})</span>
+                <span>
+                    🎁 ${s.reward} gems
+                    <button class="campaignBtn" data-idx="${i}" ${totalPower < s.power ? 'disabled style="opacity:0.4;"' : ''}>
+                        ${totalPower >= s.power ? '✅ Chiến đấu' : '🔒 Khóa'}
+                    </button>
+                </span>
+            </div>
+        `).join('');
+        container.querySelectorAll('.campaignBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                startCampaign(idx);
+            });
         });
+    }
 
-        // ========== START ==========
+    function updateBattleUI() {
+        const status = document.getElementById('battleStatus');
+        if (state.battle.animating) status.textContent = '⚔️ Đang chiến đấu...';
+        else if (state.battle.enemy) status.textContent = '👹 Đối thủ xuất hiện!';
+        else status.textContent = '🟢 Sẵn sàng';
+    }
+
+    // ============================================================
+    //  GACHA
+    // ============================================================
+    function doGacha(count) {
+        const cost = count === 1 ? 50 : 450;
+        if (state.gems < cost) {
+            document.getElementById('gachaResult').innerHTML = '❌ Không đủ gem!';
+            return;
+        }
+        state.gems -= cost;
+        const results = [];
+        for (let i=0; i<count; i++) {
+            const hero = generateHero();
+            state.heroes.push(hero);
+            results.push(hero);
+        }
+        // show result
+        const names = results.map(h => `<span style="color:${RARITY_COLORS[h.rarity]}">${h.avatar} ${h.name} (${h.rarity})</span>`).join(', ');
+        document.getElementById('gachaResult').innerHTML = `🎉 Nhận được: ${names}`;
+        // floating effect
+        addFloatingText('🎉 +' + count + ' tướng!', 200, 100);
         updateUI();
-        gameLoop();
+    }
 
-        // initial spawn
-        for (let i = 0; i < 3; i++) {
-            setTimeout(() => spawnEnemy(), i * 300);
+    // ============================================================
+    //  UPGRADE HERO
+    // ============================================================
+    function upgradeHero(idx) {
+        const h = state.heroes[idx];
+        if (!h) return;
+        const cost = Math.floor(h.level * 15);
+        if (state.gold < cost) {
+            addFloatingText('❌ Không đủ vàng!', 300, 150);
+            return;
+        }
+        state.gold -= cost;
+        h.level++;
+        h.atk += Math.floor(2 + h.level * 0.5);
+        h.def += Math.floor(1 + h.level * 0.4);
+        h.hp += Math.floor(4 + h.level * 0.8);
+        h.maxHp = h.hp;
+        addFloatingText(`⬆ ${h.name} Lv.${h.level}`, 200, 100, '#66ff88');
+        updateUI();
+    }
+
+    // ============================================================
+    //  CAMPAIGN
+    // ============================================================
+    function startCampaign(idx) {
+        const stages = [
+            { name: 'Rừng Bóng Tối', power: 50, reward: 20 },
+            { name: 'Đền Cổ', power: 100, reward: 40 },
+            { name: 'Núi Lửa', power: 200, reward: 70 },
+            { name: 'Thành Cổ', power: 350, reward: 110 },
+            { name: 'Cây Thế Giới', power: 500, reward: 160 },
+        ];
+        const stage = stages[idx];
+        const totalPower = state.heroes.reduce((s,h) => s + h.atk + h.def + Math.floor(h.hp/5), 0);
+        if (totalPower < stage.power) {
+            addFloatingText('❌ Sức mạnh không đủ!', 300, 150);
+            return;
+        }
+        // reward
+        state.gems += stage.reward;
+        state.gold += stage.reward * 2;
+        state.wins++;
+        state.playerLevel = Math.floor(state.wins / 3) + 1;
+        addFloatingText(`🏆 Thắng ${stage.name}! +${stage.reward} gems`, 200, 80, '#ffd700');
+        // random hero drop 10%
+        if (Math.random() < 0.15) {
+            const hero = generateHero();
+            state.heroes.push(hero);
+            addFloatingText(`🎉 Nhận được ${hero.name}!`, 200, 140, '#ff88ff');
+        }
+        updateUI();
+    }
+
+    // ============================================================
+    //  BATTLE / ADVENTURE (with anime-style animation on canvas)
+    // ============================================================
+    const battleCanvas = document.getElementById('battleCanvas');
+    const ctx = battleCanvas.getContext('2d');
+    let battleAnimId = null;
+
+    function startAdventure() {
+        if (state.heroes.length === 0) {
+            addFloatingText('❌ Cần ít nhất 1 tướng!', 300, 150);
+            return;
+        }
+        if (state.battle.animating) return;
+        // pick random enemy
+        const enemyTemplates = [
+            { name: 'Goblin', avatar: '👺', atk: 10, def: 4, hp: 40, color: '#4caf50' },
+            { name: 'Skeleton', avatar: '💀', atk: 14, def: 6, hp: 55, color: '#b0b0b0' },
+            { name: 'Shadow', avatar: '👻', atk: 18, def: 8, hp: 70, color: '#7b4a9e' },
+            { name: 'Boss', avatar: '🐲', atk: 25, def: 12, hp: 120, color: '#c0392b' },
+        ];
+        const enemy = { ...pick(enemyTemplates), maxHp: 0 };
+        enemy.maxHp = enemy.hp;
+        state.battle.enemy = enemy;
+        state.battle.playerTeam = state.heroes.slice(0, 3); // first 3 heroes
+        state.battle.turn = 0;
+        state.battle.log = [];
+        state.battle.animating = true;
+        document.getElementById('battleStatus').textContent = '⚔️ Đang chiến đấu...';
+        document.getElementById('adventureBtn').disabled = true;
+
+        // start battle loop
+        if (battleAnimId) cancelAnimationFrame(battleAnimId);
+        battleLoop();
+    }
+
+    function battleLoop() {
+        if (!state.battle.animating) return;
+        // simulate turn
+        const enemy = state.battle.enemy;
+        const team = state.battle.playerTeam;
+        if (!enemy || enemy.hp <= 0) {
+            // victory
+            state.battle.animating = false;
+            document.getElementById('battleStatus').textContent = '🏆 Chiến thắng!';
+            document.getElementById('adventureBtn').disabled = false;
+            const reward = 20 + state.heroes.length * 5;
+            state.gold += reward;
+            state.gems += Math.floor(reward / 2);
+            state.wins++;
+            state.playerLevel = Math.floor(state.wins / 3) + 1;
+            addFloatingText(`🎉 Thắng! +${reward}g`, 200, 80, '#ffd700');
+            updateUI();
+            drawBattleScene('win');
+            return;
+        }
+        if (team.every(h => h.hp <= 0)) {
+            // defeat
+            state.battle.animating = false;
+            document.getElementById('battleStatus').textContent = '💀 Thất bại...';
+            document.getElementById('adventureBtn').disabled = false;
+            addFloatingText('💀 Thua trận!', 300, 150, '#ff3333');
+            drawBattleScene('lose');
+            return;
         }
 
-    })();
+        // --- player attack ---
+        const attacker = team.find(h => h.hp > 0);
+        if (attacker) {
+            const dmg = Math.max(1, attacker.atk - enemy.def + randInt(-2, 5));
+            enemy.hp -= dmg;
+            state.battle.log.push(`${attacker.name} gây ${dmg} sát thương!`);
+            addFloatingText(`-${dmg}`, 500 + rand(-30,30), 100 + rand(-20,20), '#ff8844');
+            // animation effect
+            drawBattleScene('attack', attacker, enemy);
+        }
+
+        // enemy counter-attack if alive
+        if (enemy.hp > 0) {
+            const target = team.find(h => h.hp > 0);
+            if (target) {
+                const dmg = Math.max(1, enemy.atk - target.def + randInt(-2, 4));
+                target.hp -= dmg;
+                state.battle.log.push(`${enemy.name} gây ${dmg} sát thương lên ${target.name}!`);
+                addFloatingText(`-${dmg}`, 200 + rand(-20,20), 100 + rand(-20,20), '#ff3333');
+                drawBattleScene('counter', target, enemy);
+            }
+        }
+
+        // update log
+        const logDiv = document.getElementById('battleLog');
+        logDiv.innerHTML = state.battle.log.slice(-5).map(s => '⚔️ ' + s).join('<br>');
+        logDiv.scrollTop = logDiv.scrollHeight;
+
+        // next turn after delay
+        setTimeout(() => {
+            if (state.battle.animating) battleLoop();
+        }, 600);
+    }
+
+    // ============================================================
+    //  DRAW BATTLE SCENE (Anime style)
+    // ============================================================
+    function drawBattleScene(mode, attacker, enemy) {
+        const W = battleCanvas.width, H = battleCanvas.height;
+        ctx.clearRect(0, 0, W, H);
+        // background
+        ctx.fillStyle = '#0a1220';
+        ctx.fillRect(0, 0, W, H);
+        // stars
+        for (let i=0; i<40; i++) {
+            ctx.fillStyle = `rgba(255,255,255,${0.2+Math.random()*0.5})`;
+            ctx.beginPath();
+            ctx.arc(rand(10,W-10), rand(10,H-10), 1+rand(0,2), 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // draw enemy (right side)
+        const e = state.battle.enemy;
+        if (e) {
+            ctx.shadowColor = '#ff4444';
+            ctx.shadowBlur = 30;
+            ctx.font = '60px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(e.avatar, W-120, 100);
+            ctx.shadowBlur = 0;
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = '#ffdddd';
+            ctx.fillText(e.name + ' ❤️' + Math.max(0,e.hp), W-120, 130);
+            // hp bar
+            ctx.fillStyle = '#333';
+            ctx.fillRect(W-200, 140, 120, 12);
+            const hpPct = Math.max(0, e.hp / e.maxHp);
+            ctx.fillStyle = hpPct > 0.5 ? '#4caf50' : (hpPct > 0.25 ? '#ffaa44' : '#f44336');
+            ctx.fillRect(W-200, 140, 120 * hpPct, 12);
+        }
+
+        // draw player team (left side)
+        const team = state.battle.playerTeam;
+        if (team) {
+            team.forEach((h, i) => {
+                if (h.hp <= 0) return;
+                const x = 60 + i * 100;
+                const y = 70 + i * 20;
+                ctx.shadowColor = '#4488ff';
+                ctx.shadowBlur = 20;
+                ctx.font = '40px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(h.avatar, x, y+20);
+                ctx.shadowBlur = 0;
+                ctx.font = '12px sans-serif';
+                ctx.fillStyle = '#88ddff';
+                ctx.fillText(h.name + ' ❤️' + h.hp, x, y+40);
+            });
+        }
+
+        // attack effects
+        if (mode === 'attack' && attacker) {
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#ffaa44';
+            ctx.font = '50px sans-serif';
+            ctx.fillStyle = '#ffdd44';
+            ctx.fillText('⚡', W/2 + rand(-40,40), 100);
+            ctx.shadowBlur = 0;
+        }
+        if (mode === 'counter' && enemy) {
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#ff3333';
+            ctx.font = '50px sans-serif';
+            ctx.fillStyle = '#ff4444';
+            ctx.fillText('💥', W/2 + rand(-40,40), 140);
+            ctx.shadowBlur = 0;
+        }
+        if (mode === 'win') {
+            ctx.font = '48px sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.shadowColor = '#ffaa00';
+            ctx.shadowBlur = 40;
+            ctx.fillText('🏆 VICTORY!', W/2, 180);
+            ctx.shadowBlur = 0;
+        }
+        if (mode === 'lose') {
+            ctx.font = '48px sans-serif';
+            ctx.fillStyle = '#ff3333';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 40;
+            ctx.fillText('💀 DEFEAT', W/2, 180);
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    // ============================================================
+    //  FLOATING TEXT (visual feedback)
+    // ============================================================
+    function addFloatingText(text, x, y, color = '#ffd700') {
+        const el = document.createElement('div');
+        el.className = 'floatText';
+        el.textContent = text;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.color = color;
+        document.getElementById('contentArea').appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+    }
+
+    // ============================================================
+    //  TAB SWITCHING
+    // ============================================================
+    function switchTab(tab) {
+        state.currentTab = tab;
+        document.querySelectorAll('#contentArea > div').forEach(el => el.classList.remove('active'));
+        document.getElementById(tab + 'Panel').classList.add('active');
+        // update content
+        if (tab === 'hero') renderHeroList();
+        if (tab === 'backpack') renderBackpack();
+        if (tab === 'campaign') renderCampaign();
+        if (tab === 'adventure') {
+            drawBattleScene('idle');
+            updateBattleUI();
+        }
+    }
+
+    // ============================================================
+    //  INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        // tab buttons
+        document.querySelectorAll('.menuBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                switchTab(tab);
+            });
+        });
+
+        // gacha buttons
+        document.getElementById('gacha1Btn').addEventListener('click', () => doGacha(1));
+        document.getElementById('gacha10Btn').addEventListener('click', () => doGacha(10));
+
+        // adventure
+        document.getElementById('adventureBtn').addEventListener('click', startAdventure);
+
+        // initial state: give 2 starter heroes
+        for (let i=0; i<2; i++) {
+            const h = generateHero();
+            h.rarity = 'rare';
+            state.heroes.push(h);
+        }
+        updateUI();
+        switchTab('hero');
+
+        // draw initial battle canvas
+        drawBattleScene('idle');
+    });
+
+    // canvas resize handler
+    function resizeCanvas() {
+        const rect = battleCanvas.getBoundingClientRect();
+        // keep aspect ratio
+        battleCanvas.width = rect.width * (900 / rect.width);
+        battleCanvas.height = rect.width * (300 / 900);
+        drawBattleScene('idle');
+    }
+    window.addEventListener('resize', resizeCanvas);
 </script>
 </body>
 </html>
