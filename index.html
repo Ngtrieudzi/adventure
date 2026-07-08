@@ -5,19 +5,430 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚔️ Anime Card Brawler</title>
     <style>
-        /* Tất cả CSS sẽ ở đây để tiện quản lý */
+        /* ========== CSS GIỐNG GAME GỐC ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #0a0a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        #game-container {
+            max-width: 1100px;
+            width: 100%;
+            background: linear-gradient(180deg, #0f0f2a 0%, #1a1a3e 100%);
+            border-radius: 25px;
+            padding: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+        }
+
+        /* ----- HEADER ----- */
+        #header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.15);
+            margin-bottom: 12px;
+        }
+        #header h1 {
+            font-size: 2rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            letter-spacing: 2px;
+        }
+        #subtitle {
+            color: #8899bb;
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+        }
+
+        /* ----- THANH THÔNG TIN ----- */
+        #player-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #health-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 200px;
+        }
+        #health-bar {
+            flex: 1;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            overflow: hidden;
+            min-width: 100px;
+        }
+        #health-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #4ecdc4);
+            transition: width 0.4s ease;
+        }
+        #hp-text {
+            font-size: 0.85rem;
+            color: #ddd;
+            font-weight: bold;
+            min-width: 70px;
+        }
+        #stats-right {
+            display: flex;
+            gap: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+        #stats-right span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stat-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* ----- HỘP THÔNG BÁO ----- */
+        #message-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            min-height: 40px;
+            border-left: 4px solid #ffd700;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+
+        /* ----- KHU VỰC CHIẾN ĐẤU ----- */
+        #battle-area {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 12px;
+            min-height: 300px;
+        }
+        #enemy-row {
+            display: flex;
+            justify-content: center;
+            min-height: 140px;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 50, 50, 0.08);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        #player-row {
+            display: flex;
+            justify-content: center;
+            min-height: 140px;
+            padding: 10px;
+            background: rgba(0, 255, 200, 0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(0, 255, 200, 0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* ----- THẺ BÀI ----- */
+        .card {
+            background: linear-gradient(145deg, #2b2b4a, #1a1a2e);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 10px 12px;
+            width: 130px;
+            text-align: center;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+        .card-player {
+            cursor: pointer;
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+        .card-player:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: #ffd700;
+            box-shadow: 0 12px 35px rgba(255, 215, 0, 0.2);
+        }
+        .card-enemy {
+            border-color: rgba(255, 80, 80, 0.3);
+            cursor: default;
+        }
+        .card img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 0 auto 6px;
+            display: block;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        .card-enemy img {
+            border-color: rgba(255, 80, 80, 0.3);
+        }
+        .card-name {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #fff;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-anime {
+            font-size: 0.6rem;
+            color: #8899bb;
+            margin-bottom: 6px;
+        }
+        .card-health-bar {
+            height: 6px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+        .card-health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s;
+        }
+        .card-stats {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 4px;
+        }
+        .card-rarity-common { border-color: #8899bb; }
+        .card-rarity-uncommon { border-color: #4ecdc4; }
+        .card-rarity-rare { border-color: #4a9eff; }
+        .card-rarity-epic { border-color: #a855f7; }
+        .card-rarity-legendary { border-color: #ffd700; }
+        .card-rarity-ex { border-color: #ff6b6b; box-shadow: 0 0 25px rgba(255, 107, 107, 0.2); }
+
+        /* ----- KHU VỰC GACHA (ROLL NHÂN VẬT) ----- */
+        #gacha-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .gacha-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: linear-gradient(145deg, #f5c842, #e6b830);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(245, 200, 66, 0.15);
+        }
+        .gacha-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 200, 66, 0.25);
+        }
+        .gacha-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .gacha-btn-diamond {
+            background: linear-gradient(145deg, #4a9eff, #2a7aff);
+            color: white;
+        }
+        .gacha-result {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .gacha-card {
+            background: linear-gradient(145deg, #2b2b4a, #1a1a2e);
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 8px 12px;
+            width: 100px;
+            text-align: center;
+            animation: gachaAppear 0.5s ease;
+        }
+        .gacha-card img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 4px;
+            border: 2px solid #ffd700;
+        }
+        .gacha-card .card-name {
+            font-size: 0.75rem;
+        }
+        @keyframes gachaAppear {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* ----- KHU VỰC KHO NHÂN VẬT (Roster) ----- */
+        #roster-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #roster-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .roster-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            padding: 5px 10px;
+            width: 80px;
+            text-align: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .roster-card:hover {
+            border-color: #ffd700;
+            transform: scale(1.05);
+        }
+        .roster-card img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 2px;
+        }
+        .roster-card .card-name {
+            font-size: 0.6rem;
+        }
+        .roster-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        /* ----- NÚT ĐIỀU KHIỂN ----- */
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px 0 5px;
+        }
+        #controls button {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: linear-gradient(145deg, #f5c842, #e6b830);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(245, 200, 66, 0.15);
+        }
+        #controls button:hover {
+            transform: translateY(-3px);
+        }
+        .btn-danger {
+            background: linear-gradient(145deg, #ff6b6b, #cc4444) !important;
+            color: white !important;
+        }
+
+        /* ----- BOSS ----- */
+        .boss-announce {
+            background: linear-gradient(145deg, #2a0a0a, #1a0505);
+            border: 2px solid #ff6b6b;
+            border-radius: 16px;
+            padding: 12px 20px;
+            text-align: center;
+            margin-bottom: 12px;
+            animation: bossPulse 2s ease-in-out infinite;
+        }
+        .boss-announce h2 {
+            color: #ff6b6b;
+            font-size: 1.4rem;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+        @keyframes bossPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.1); }
+            50% { box-shadow: 0 0 50px rgba(255, 107, 107, 0.25); }
+        }
+
+        /* ----- GAME OVER ----- */
+        .game-over-overlay {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.08);
+            border-radius: 16px;
+            border: 2px solid #ff6b6b;
+            text-align: center;
+        }
+        .game-over-overlay h2 {
+            color: #ff6b6b;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 768px) {
+            #game-container { padding: 12px; }
+            #header h1 { font-size: 1.5rem; }
+            .card, .gacha-card { width: 100px; padding: 6px 8px; }
+            .card img, .gacha-card img { width: 40px; height: 40px; }
+            #health-bar { min-width: 80px; }
+            #stats-right { gap: 10px; font-size: 0.8rem; }
+            #controls button { padding: 8px 14px; font-size: 0.75rem; }
+            .roster-card { width: 60px; }
+            .roster-card img { width: 30px; height: 30px; }
+        }
     </style>
 </head>
 <body>
-    <!-- BỐ CỤC Y CHANG GAME GỐC -->
     <div id="game-container">
-        <!-- 1. Thanh tiêu đề (giống game) -->
+        <!-- HEADER -->
         <div id="header">
             <h1>⚔️ Anime Card Brawler</h1>
-            <p id="subtitle">🎴 BATTLE · COLLECT · WIN</p>
+            <p id="subtitle">🎴 ĐI ẢI · THU THẬP · CHIẾN ĐẤU</p>
         </div>
 
-        <!-- 2. Thanh thông tin người chơi (giống game) -->
+        <!-- THANH THÔNG TIN -->
         <div id="player-stats">
             <div id="health-section">
                 <span id="hp-icon">❤️</span>
@@ -27,54 +438,608 @@
                 <span id="hp-text">1000/1000</span>
             </div>
             <div id="stats-right">
-                <span>⭐ <span id="wave-display">1</span></span>
-                <span>💰 <span id="gold-display">0</span></span>
-                <span>🔥 <span id="combo-display">0</span></span>
+                <span>⭐ Ải: <span class="stat-value" id="wave-display">1</span></span>
+                <span>💰 Vàng: <span class="stat-value" id="gold-display">0</span></span>
+                <span>💎 Đá: <span class="stat-value" id="gem-display">0</span></span>
+                <span>🔥 Combo: <span class="stat-value" id="combo-display">0</span></span>
             </div>
         </div>
 
-        <!-- 3. Khu vực thông báo (giống game) -->
+        <!-- THÔNG BÁO -->
         <div id="message-box">
-            <span id="message-text">Chào mừng! Hãy bắt đầu hành trình!</span>
+            <span id="message-text">Chào mừng! Hãy bắt đầu hành trình đi ải!</span>
         </div>
 
-        <!-- 4. KHU VỰC CHIẾN ĐẤU (Phần QUAN TRỌNG NHẤT - giống game) -->
+        <!-- KHU VỰC CHIẾN ĐẤU -->
         <div id="battle-area">
-            <!-- 4a. Hàng QUÁI VẬT (phía trên) -->
             <div id="enemy-row">
-                <div id="enemy-container">
-                    <!-- Quái vật sẽ hiện ở đây -->
-                </div>
+                <!-- Quái vật sẽ hiện ở đây -->
             </div>
-
-            <!-- 4b. Hàng THẺ CỦA BẠN (phía dưới) -->
             <div id="player-row">
-                <div id="player-container">
-                    <!-- Thẻ của bạn sẽ hiện ở đây -->
-                </div>
+                <!-- Thẻ của bạn sẽ hiện ở đây -->
             </div>
         </div>
 
-        <!-- 5. Hàng TAY BÀI (phía dưới cùng - giống game) -->
-        <div id="hand-area">
-            <div id="hand-container">
-                <!-- Bài trên tay sẽ hiện ở đây -->
-            </div>
+        <!-- KHU VỰC GACHA (ROLL NHÂN VẬT) -->
+        <div id="gacha-area">
+            <button class="gacha-btn" onclick="game.rollCharacter(1)">🎲 Roll 1 (💰 100)</button>
+            <button class="gacha-btn" onclick="game.rollCharacter(10)">🎲 Roll 10 (💰 900)</button>
+            <button class="gacha-btn gacha-btn-diamond" onclick="game.rollCharacterDiamond(1)">💎 Roll 1 (💎 10)</button>
+            <button class="gacha-btn gacha-btn-diamond" onclick="game.rollCharacterDiamond(10)">💎 Roll 10 (💎 90)</button>
+            <div id="gacha-result" class="gacha-result"></div>
         </div>
 
-        <!-- 6. Nút điều khiển (giống game) -->
+        <!-- KHU VỰC KHO NHÂN VẬT -->
+        <div id="roster-area">
+            <div style="display:flex; justify-content:space-between; padding:0 10px 8px; color:#8899bb; font-size:0.8rem;">
+                <span>📦 Kho nhân vật (<span id="roster-count">0</span>)</span>
+                <span style="font-size:0.7rem;">👆 Click để chọn thẻ ra sân</span>
+            </div>
+            <div id="roster-container"></div>
+        </div>
+
+        <!-- NÚT ĐIỀU KHIỂN -->
         <div id="controls">
-            <button onclick="game.drawCard()">🃏 Rút bài</button>
-            <button onclick="game.startChallenge('jujutsu')" class="btn-challenge" style="background:#6b21a5;">👁️ JJK</button>
-            <button onclick="game.startChallenge('naruto')" class="btn-challenge" style="background:#e67e22;">🍥 Naruto</button>
-            <button onclick="game.startChallenge('onepiece')" class="btn-challenge" style="background:#e74c3c;">🏴‍☠️ OP</button>
-            <button onclick="game.startChallenge('demonslayer')" class="btn-challenge" style="background:#2ecc71;">🌊 DS</button>
+            <button onclick="game.nextWave()">⏭️ Ải tiếp theo</button>
             <button onclick="game.restartGame()" class="btn-danger">🔄 Chơi lại</button>
         </div>
     </div>
 
     <script>
-        // TOÀN BỘ JAVASCRIPT SẼ Ở ĐÂY
+        // ========== JAVASCRIPT (CƠ CHẾ ĐI ẢI + GACHA) ==========
+
+        // ----- DỮ LIỆU NHÂN VẬT (CÓ ẢNH) -----
+        const CHARACTERS = [
+            { id: 1, name: "Naruto", anime: "Naruto", hp: 140, atk: 22, rarity: "rare", emoji: "🍥", image: "https://i.pinimg.com/736x/6e/8e/8b/6e8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 2, name: "Sasuke", anime: "Naruto", hp: 120, atk: 28, rarity: "rare", emoji: "⚡", image: "https://i.pinimg.com/736x/7e/8e/8b/7e8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 3, name: "Sakura", anime: "Naruto", hp: 100, atk: 18, rarity: "common", emoji: "🌸", image: "https://i.pinimg.com/736x/8e/8e/8b/8e8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 5, name: "Luffy", anime: "One Piece", hp: 160, atk: 20, rarity: "legendary", emoji: "🏴‍☠️", image: "https://i.pinimg.com/736x/9e/8e/8b/9e8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 6, name: "Zoro", anime: "One Piece", hp: 140, atk: 24, rarity: "epic", emoji: "⚔️", image: "https://i.pinimg.com/736x/ae/8e/8b/ae8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 7, name: "Sanji", anime: "One Piece", hp: 125, atk: 22, rarity: "uncommon", emoji: "🔥", image: "https://i.pinimg.com/736x/be/8e/8b/be8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 9, name: "Gojo", anime: "Jujutsu", hp: 150, atk: 32, rarity: "legendary", emoji: "👁️", image: "https://i.pinimg.com/736x/ce/8e/8b/ce8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 10, name: "Yuji", anime: "Jujutsu", hp: 135, atk: 26, rarity: "epic", emoji: "👊", image: "https://i.pinimg.com/736x/de/8e/8b/de8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 12, name: "Tanjiro", anime: "Demon Slayer", hp: 130, atk: 24, rarity: "rare", emoji: "🌊", image: "https://i.pinimg.com/736x/ee/8e/8b/ee8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 13, name: "Nezuko", anime: "Demon Slayer", hp: 115, atk: 20, rarity: "uncommon", emoji: "🔥", image: "https://i.pinimg.com/736x/fe/8e/8b/fe8e8b6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 15, name: "Rengoku", anime: "Demon Slayer", hp: 145, atk: 29, rarity: "epic", emoji: "🔥", image: "https://i.pinimg.com/736x/0e/8e/8c/0e8e8c6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 16, name: "Ichigo", anime: "Bleach", hp: 150, atk: 28, rarity: "epic", emoji: "⚔️", image: "https://i.pinimg.com/736x/1e/8e/8c/1e8e8c6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 18, name: "Deku", anime: "MHA", hp: 125, atk: 26, rarity: "rare", emoji: "💪", image: "https://i.pinimg.com/736x/2e/8e/8c/2e8e8c6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 20, name: "Escanor", anime: "7DS", hp: 170, atk: 35, rarity: "ex", emoji: "☀️", image: "https://i.pinimg.com/736x/3e/8e/8c/3e8e8c6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+            { id: 22, name: "Sung Jin-Woo", anime: "Solo Leveling", hp: 160, atk: 33, rarity: "ex", emoji: "👑", image: "https://i.pinimg.com/736x/4e/8e/8c/4e8e8c6a8b6a8b6a8b6a8b6a8b6a8b6a.jpg" },
+        ];
+
+        // ----- LỚP NHÂN VẬT -----
+        class Character {
+            constructor(data) {
+                this.id = data.id + Date.now() + Math.random() * 1000;
+                this.name = data.name;
+                this.anime = data.anime;
+                this.hp = data.hp;
+                this.maxHp = data.hp;
+                this.atk = data.atk;
+                this.rarity = data.rarity || 'common';
+                this.emoji = data.emoji || '🃏';
+                this.image = data.image || '';
+                this.isAlive = true;
+                this.isStunned = false;
+                this.originalAtk = data.atk;
+            }
+        }
+
+        // ----- LỚP NGƯỜI CHƠI -----
+        class Player {
+            constructor() {
+                this.health = 1000;
+                this.maxHealth = 1000;
+                this.board = [];
+                this.roster = []; // Kho nhân vật
+                this.gold = 100; // Bắt đầu với 100 vàng
+                this.gems = 10; // Bắt đầu với 10 đá
+                this.wave = 1;
+                this.combo = 0;
+                this.bossDefeated = 0;
+                this.isBossWave = false;
+                this.gameOver = false;
+            }
+        }
+
+        // ----- GAME ENGINE -----
+        class Game {
+            constructor() {
+                this.player = new Player();
+                this.enemies = [];
+                this.boss = null;
+                this.turn = 0;
+                this.isPlayerTurn = true;
+                this.message = "🎴 Chào mừng! Hãy bắt đầu đi ải!";
+                this.battleInterval = null;
+                this.isBattling = false;
+
+                this.initGame();
+            }
+
+            // ----- KHỞI TẠO -----
+            initGame() {
+                this.player = new Player();
+                this.enemies = [];
+                this.boss = null;
+                this.turn = 0;
+                this.isPlayerTurn = true;
+                this.isBattling = false;
+                if (this.battleInterval) clearInterval(this.battleInterval);
+
+                // Tạo nhân vật khởi đầu
+                const starter = new Character(CHARACTERS[0]);
+                this.player.roster.push(starter);
+                // Tự động đưa ra sân
+                this.selectCharacter(starter.id);
+
+                // Tạo quái vật sóng 1
+                this.generateWave(1);
+                this.message = "⚔️ Bắt đầu đi ải! Quan sát nhân vật tự động chiến đấu!";
+                this.render();
+
+                // Bắt đầu chiến đấu tự động
+                this.startAutoBattle();
+            }
+
+            // ----- CHỌN NHÂN VẬT TỪ KHO RA SÂN -----
+            selectCharacter(charId) {
+                const char = this.player.roster.find(c => c.id === charId && c.isAlive);
+                if (!char) return;
+                if (this.player.board.length >= 5) {
+                    this.message = "⚠️ Sân đã đầy (tối đa 5 nhân vật)!";
+                    this.render();
+                    return;
+                }
+                // Kiểm tra xem đã có trên sân chưa
+                if (this.player.board.find(c => c.id === charId)) {
+                    this.message = "⚠️ Nhân vật này đã có trên sân!";
+                    this.render();
+                    return;
+                }
+                this.player.board.push(char);
+                this.message = `✅ Đã đưa ${char.emoji} ${char.name} ra sân!`;
+                this.render();
+            }
+
+            // ----- TẠO SÓNG MỚI -----
+            generateWave(wave) {
+                this.player.wave = wave;
+                this.player.isBossWave = (wave % 10 === 0 || wave === 50);
+
+                if (this.player.isBossWave) {
+                    this.boss = this.createBoss(wave);
+                    this.enemies = [];
+                    this.message = `👑 BOSS XUẤT HIỆN! Ải ${wave}!`;
+                } else {
+                    this.boss = null;
+                    const count = Math.min(3 + Math.floor(wave / 3), 6);
+                    this.enemies = [];
+                    const names = ['Goblin', 'Orc', 'Slime', 'Skeleton', 'Demon', 'Shadow'];
+                    for (let i = 0; i < count; i++) {
+                        const enemy = new Character({
+                            id: 1000 + i,
+                            name: `${names[i % names.length]} Lv.${wave}`,
+                            anime: `Ải ${wave}`,
+                            hp: 40 + wave * 12 + Math.random() * 20,
+                            atk: 8 + wave * 3 + Math.random() * 5,
+                            rarity: 'common',
+                            emoji: ['👾', '👻', '🧛', '🧟', '👹', '😈'][i % 6],
+                            image: ''
+                        });
+                        this.enemies.push(enemy);
+                    }
+                    this.message = `🌊 Ải ${wave} bắt đầu! (${this.enemies.length} quái vật)`;
+                }
+
+                // Hồi phục người chơi
+                const heal = 50 + wave * 5;
+                this.player.health = Math.min(this.player.maxHealth, this.player.health + heal);
+                this.player.combo = 0;
+            }
+
+            // ----- TẠO BOSS -----
+            createBoss(wave) {
+                const bosses = [
+                    { name: 'Vua Quỷ', emoji: '👿', hp: 300, atk: 30 },
+                    { name: 'Rồng Bóng Tối', emoji: '🐉', hp: 400, atk: 35 },
+                    { name: 'Thần Hủy Diệt', emoji: '💀', hp: 500, atk: 40 },
+                    { name: 'Kẻ Thống Trị', emoji: '👑', hp: 600, atk: 45 },
+                ];
+                const idx = Math.min(Math.floor(wave / 10) - 1, 3);
+                const data = bosses[idx] || bosses[0];
+                const bonus = wave * 5;
+
+                const boss = new Character({
+                    id: 9999,
+                    name: data.name,
+                    anime: `BOSS Ải ${wave}`,
+                    hp: data.hp + bonus,
+                    atk: data.atk + Math.floor(bonus / 3),
+                    rarity: 'ex',
+                    emoji: data.emoji,
+                    image: ''
+                });
+
+                if (wave === 50) {
+                    boss.name = 'Chaos - Kẻ Hủy Diệt Vũ Trụ';
+                    boss.hp = 2000;
+                    boss.atk = 60;
+                    boss.emoji = '👾';
+                }
+                return boss;
+            }
+
+            // ----- CHIẾN ĐẤU TỰ ĐỘNG -----
+            startAutoBattle() {
+                if (this.battleInterval) clearInterval(this.battleInterval);
+                this.isBattling = true;
+
+                this.battleInterval = setInterval(() => {
+                    if (this.player.gameOver) {
+                        clearInterval(this.battleInterval);
+                        return;
+                    }
+                    this.autoBattleTurn();
+                }, 1200);
+            }
+
+            // ----- MỘT LƯỢT CHIẾN ĐẤU TỰ ĐỘNG -----
+            autoBattleTurn() {
+                if (this.player.gameOver) return;
+
+                if (this.isPlayerTurn) {
+                    let target = null;
+                    if (this.boss && this.boss.isAlive) {
+                        target = this.boss;
+                    } else if (this.enemies.length > 0) {
+                        target = this.enemies[0];
+                    }
+
+                    if (target) {
+                        const attacker = this.player.board.find(c => c.isAlive);
+                        if (attacker && !attacker.isStunned) {
+                            const damage = this.calculateDamage(attacker);
+                            target.hp -= damage;
+                            this.player.combo = (this.player.combo || 0) + 1;
+
+                            if (this.player.combo >= 3) {
+                                this.message = `🔥 COMBO x${this.player.combo}! Sát thương +30%!`;
+                            } else {
+                                this.message = `${attacker.emoji} ${attacker.name} tấn công ${target.emoji} ${target.name} -${damage} HP!`;
+                            }
+
+                            if (target.hp <= 0) {
+                                target.isAlive = false;
+                                if (target === this.boss) {
+                                    this.player.gold += 100 + this.player.wave * 10;
+                                    this.player.gems += 5;
+                                    this.player.bossDefeated++;
+                                    this.message = `🎉 ${target.emoji} ${target.name} đã bị đánh bại! +100 vàng, +5 đá!`;
+                                    this.boss = null;
+                                    if (this.player.wave === 50) {
+                                        this.player.gameOver = true;
+                                        this.message = "🎉 CHIẾN THẮNG! Bạn đã vượt qua ải 50!";
+                                        this.render();
+                                        return;
+                                    }
+                                } else {
+                                    this.enemies = this.enemies.filter(e => e.isAlive);
+                                    this.player.gold += 10 + this.player.wave;
+                                    this.player.gems += 1;
+                                    this.message = `💀 ${target.emoji} ${target.name} bị tiêu diệt! +${10 + this.player.wave} vàng, +1 đá!`;
+                                }
+                            }
+                            this.turn++;
+                        }
+                    }
+
+                    // Kiểm tra hết quái
+                    const enemiesLeft = this.enemies.filter(e => e.isAlive);
+                    const bossAlive = this.boss && this.boss.isAlive;
+                    if (enemiesLeft.length === 0 && !bossAlive) {
+                        this.message = `🎉 Ải ${this.player.wave} đã được dọn sạch! Nhận thưởng!`;
+                        // Thưởng thêm khi qua ải
+                        this.player.gold += 20 + this.player.wave * 2;
+                        this.player.gems += 2;
+                        this.render();
+                        // Tự động lên ải tiếp theo sau 2 giây
+                        setTimeout(() => {
+                            if (!this.player.gameOver) {
+                                this.player.wave++;
+                                this.generateWave(this.player.wave);
+                                this.render();
+                            }
+                        }, 2000);
+                        return;
+                    }
+
+                    this.isPlayerTurn = false;
+                    this.render();
+
+                    setTimeout(() => {
+                        if (this.player.gameOver) return;
+                        this.enemyTurn();
+                    }, 500);
+                }
+            }
+
+            // ----- TÍNH SÁT THƯƠNG (CÓ CRIT) -----
+            calculateDamage(attacker) {
+                let damage = attacker.atk;
+                const isCrit = Math.random() < 0.15;
+                if (isCrit) damage = Math.floor(damage * 1.8);
+                if (this.player.combo >= 3) damage = Math.floor(damage * 1.3);
+                return damage;
+            }
+
+            // ----- LƯỢT CỦA QUÁI VẬT -----
+            enemyTurn() {
+                if (this.player.gameOver) return;
+
+                const enemies = [...this.enemies];
+                if (this.boss && this.boss.isAlive) enemies.push(this.boss);
+
+                for (let enemy of enemies) {
+                    if (!enemy.isAlive || enemy.isStunned) continue;
+
+                    const aliveCards = this.player.board.filter(c => c.isAlive);
+                    if (aliveCards.length > 0) {
+                        const target = aliveCards[Math.floor(Math.random() * aliveCards.length)];
+                        const damage = Math.floor(enemy.atk * (0.6 + Math.random() * 0.4));
+                        target.hp -= damage;
+                        if (target.hp <= 0) {
+                            target.isAlive = false;
+                            this.player.board = this.player.board.filter(c => c.isAlive);
+                            this.message = `💀 ${target.emoji} ${target.name} đã bị ${enemy.emoji} ${enemy.name} đánh bại!`;
+                        } else {
+                            this.message = `⚔️ ${enemy.emoji} ${enemy.name} tấn công ${target.emoji} ${target.name} -${damage} HP!`;
+                        }
+                    } else {
+                        const damage = Math.floor(enemy.atk * 0.7);
+                        this.player.health -= damage;
+                        this.message = `💢 ${enemy.emoji} ${enemy.name} tấn công trực tiếp -${damage} HP!`;
+                    }
+                }
+
+                if (this.player.health <= 0 || this.player.board.length === 0) {
+                    this.player.gameOver = true;
+                    this.message = `💀 GAME OVER! Bạn đã thua ở ải ${this.player.wave}`;
+                    clearInterval(this.battleInterval);
+                    this.render();
+                    return;
+                }
+
+                this.isPlayerTurn = true;
+                this.render();
+            }
+
+            // ----- ROLL NHÂN VẬT (GACHA) -----
+            rollCharacter(amount) {
+                const cost = amount === 1 ? 100 : 900;
+                if (this.player.gold < cost) {
+                    this.message = `⚠️ Không đủ vàng! Cần ${cost} vàng.`;
+                    this.render();
+                    return;
+                }
+
+                this.player.gold -= cost;
+                const results = [];
+                for (let i = 0; i < amount; i++) {
+                    const char = this.getRandomCharacter();
+                    this.player.roster.push(char);
+                    results.push(char);
+                }
+
+                this.message = `🎉 Roll thành công ${amount} nhân vật!`;
+                this.showGachaResult(results);
+                this.render();
+            }
+
+            rollCharacterDiamond(amount) {
+                const cost = amount === 1 ? 10 : 90;
+                if (this.player.gems < cost) {
+                    this.message = `⚠️ Không đủ đá! Cần ${cost} đá.`;
+                    this.render();
+                    return;
+                }
+
+                this.player.gems -= cost;
+                const results = [];
+                for (let i = 0; i < amount; i++) {
+                    const char = this.getRandomCharacter();
+                    this.player.roster.push(char);
+                    results.push(char);
+                }
+
+                this.message = `💎 Roll thành công ${amount} nhân vật bằng đá!`;
+                this.showGachaResult(results);
+                this.render();
+            }
+
+            // ----- LẤY NHÂN VẬT NGẪU NHIÊN (CÓ TỈ LỆ HIẾM) -----
+            getRandomCharacter() {
+                // Tỉ lệ: Common 50%, Uncommon 25%, Rare 15%, Epic 7%, Legendary 2.5%, EX 0.5%
+                const roll = Math.random() * 100;
+                let rarity = 'common';
+                if (roll < 0.5) rarity = 'ex';
+                else if (roll < 3) rarity = 'legendary';
+                else if (roll < 10) rarity = 'epic';
+                else if (roll < 25) rarity = 'rare';
+                else if (roll < 50) rarity = 'uncommon';
+
+                // Lọc nhân vật theo rarity
+                let pool = CHARACTERS.filter(c => c.rarity === rarity);
+                if (pool.length === 0) pool = CHARACTERS.filter(c => c.rarity === 'common');
+                const data = pool[Math.floor(Math.random() * pool.length)];
+                return new Character(data);
+            }
+
+            // ----- HIỂN THỊ KẾT QUẢ ROLL -----
+            showGachaResult(results) {
+                const container = document.getElementById('gacha-result');
+                let html = '';
+                results.forEach(char => {
+                    const rarityClass = `card-rarity-${char.rarity}`;
+                    html += `
+                        <div class="gacha-card ${rarityClass}">
+                            ${char.image ? `<img src="${char.image}" alt="${char.name}">` : `<div style="font-size:2rem;">${char.emoji}</div>`}
+                            <div class="card-name">${char.name}</div>
+                            <div style="font-size:0.6rem;color:#8899bb;">${char.rarity}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                setTimeout(() => { container.innerHTML = ''; }, 5000);
+            }
+
+            // ----- CHUYỂN ẢI TIẾP THEO (THỦ CÔNG) -----
+            nextWave() {
+                if (this.player.gameOver) return;
+                this.player.wave++;
+                this.generateWave(this.player.wave);
+                this.render();
+            }
+
+            // ----- CHƠI LẠI -----
+            restartGame() {
+                if (this.battleInterval) clearInterval(this.battleInterval);
+                this.initGame();
+            }
+
+            // ----- HIỂN THỊ UI -----
+            render() {
+                // Cập nhật thanh máu
+                const healthPercent = (this.player.health / this.player.maxHealth) * 100;
+                document.getElementById('health-fill').style.width = healthPercent + '%';
+                document.getElementById('hp-text').textContent = `${Math.floor(this.player.health)}/${this.player.maxHealth}`;
+
+                document.getElementById('wave-display').textContent = this.player.wave;
+                document.getElementById('gold-display').textContent = this.player.gold;
+                document.getElementById('gem-display').textContent = this.player.gems;
+                document.getElementById('combo-display').textContent = this.player.combo || 0;
+                document.getElementById('message-text').textContent = this.message;
+
+                // ----- RENDER QUÁI VẬT -----
+                const enemyRow = document.getElementById('enemy-row');
+                let enemyHTML = '';
+
+                if (this.boss && this.boss.isAlive) {
+                    enemyHTML += this.createCardHTML(this.boss, 'enemy');
+                }
+                this.enemies.forEach(enemy => {
+                    if (enemy.isAlive) {
+                        enemyHTML += this.createCardHTML(enemy, 'enemy');
+                    }
+                });
+                if (!enemyHTML) {
+                    enemyHTML = `<p style="color:#4ecdc4; width:100%; text-align:center;">✨ Sạch sẽ!</p>`;
+                }
+                enemyRow.innerHTML = enemyHTML;
+
+                // ----- RENDER THẺ CỦA BẠN -----
+                const playerRow = document.getElementById('player-row');
+                let playerHTML = '';
+                this.player.board.forEach(card => {
+                    if (card.isAlive) {
+                        playerHTML += this.createCardHTML(card, 'player');
+                    }
+                });
+                if (!playerHTML) {
+                    playerHTML = `<p style="color:#ff6b6b; width:100%; text-align:center;">⚠️ Không có nhân vật nào!</p>`;
+                }
+                playerRow.innerHTML = playerHTML;
+
+                // ----- RENDER KHO NHÂN VẬT -----
+                const rosterContainer = document.getElementById('roster-container');
+                document.getElementById('roster-count').textContent = this.player.roster.length;
+
+                let rosterHTML = '';
+                this.player.roster.forEach(char => {
+                    if (!char.isAlive) return;
+                    const isOnBoard = this.player.board.find(c => c.id === char.id);
+                    const selectedClass = isOnBoard ? 'selected' : '';
+                    const rarityClass = `card-rarity-${char.rarity}`;
+                    rosterHTML += `
+                        <div class="roster-card ${selectedClass} ${rarityClass}" onclick="game.selectCharacter('${char.id}')">
+                            ${char.image ? `<img src="${char.image}" alt="${char.name}">` : `<div style="font-size:1.5rem;">${char.emoji}</div>`}
+                            <div class="card-name">${char.name}</div>
+                            <div style="font-size:0.5rem;color:#8899bb;">❤️${char.hp}</div>
+                        </div>
+                    `;
+                });
+                if (!rosterHTML) {
+                    rosterHTML = `<p style="color:#aaa;">Chưa có nhân vật nào! Hãy roll để lấy nhân vật.</p>`;
+                }
+                rosterContainer.innerHTML = rosterHTML;
+
+                // ----- BOSS -----
+                let bossAnnounceHTML = '';
+                if (this.player.isBossWave && this.boss && this.boss.isAlive) {
+                    bossAnnounceHTML = `
+                        <div class="boss-announce">
+                            <h2>👑 ${this.boss.emoji} ${this.boss.name} 👑</h2>
+                            <p>❤️ ${this.boss.hp} / ${this.boss.maxHp} | ⚔️ ATK: ${this.boss.atk}</p>
+                        </div>
+                    `;
+                }
+                const messageBox = document.getElementById('message-box');
+                const existingBoss = document.querySelector('.boss-announce');
+                if (existingBoss) existingBoss.remove();
+                if (bossAnnounceHTML) {
+                    messageBox.insertAdjacentHTML('afterend', bossAnnounceHTML);
+                }
+
+                // ----- GAME OVER -----
+                const existingGameOver = document.querySelector('.game-over-overlay');
+                if (existingGameOver) existingGameOver.remove();
+
+                if (this.player.gameOver) {
+                    const gameOverHTML = `
+                        <div class="game-over-overlay">
+                            <h2>💀 GAME OVER</h2>
+                            <p>Bạn đã sống sót đến ải <strong style="color:#ffd700;">${this.player.wave}</strong></p>
+                            <p>💰 Vàng: <strong style="color:#ffd700;">${this.player.gold}</strong></p>
+                            <p>💎 Đá: <strong style="color:#ffd700;">${this.player.gems}</strong></p>
+                            <p>👑 Boss đã đánh bại: <strong style="color:#ffd700;">${this.player.bossDefeated}</strong></p>
+                            <p>🎴 Tổng nhân vật: <strong style="color:#ffd700;">${this.player.roster.length}</strong></p>
+                        </div>
+                    `;
+                    document.getElementById('game-container').insertAdjacentHTML('beforeend', gameOverHTML);
+                }
+            }
+
+            // ----- TẠO HTML CHO THẺ -----
+            createCardHTML(card, type) {
+                const hpPercent = (card.hp / card.maxHp) * 100;
+                const rarityClass = `card-rarity-${card.rarity}`;
+                const extraClass = type === 'player' ? 'card-player' : 'card-enemy';
+
+                const imageHTML = card.image ?
+                    `<img src="${card.image}" alt="${card.name}" loading="lazy">` :
+                    `<div style="font-size:2.5rem; margin:5px 0;">${card.emoji}</div>`;
+
+                return `
+                    <div class="card ${extraClass} ${rarityClass}">
+                        ${imageHTML}
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-anime">${card.anime}</div>
+                        <div class="card-health-bar">
+                            <div class="card-health-fill" style="width:${hpPercent}%;"></div>
+                        </div>
+                        <div class="card-stats">
+                            <span>❤️ ${Math.floor(card.hp)}</span>
+                            <span>⚔️ ${card.atk}</span>
+                        </div>
+                        ${type === 'player' ? '<div style="font-size:0.5rem;color:#ffd700;margin-top:3px;">⚔️ Tự động</div>' : ''}
+                        ${card.isStunned ? '<div style="font-size:0.5rem;color:#ff6b6b;">⛔ Choáng</div>' : ''}
+                    </div>
+                `;
+            }
+        }
+
+        // ----- KHỞI TẠO GAME -----
+        const game = new Game();
     </script>
 </body>
 </html>
